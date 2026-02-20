@@ -7,8 +7,8 @@ class Settings(BaseSettings):
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
     jwt_expire_days: int = 30
-    smsc_login: str = "batrbek"
-    smsc_password: str = "Aa12345!"
+    smsc_login: str = "batrbekk"
+    smsc_password: str = "Batrbekk031198"
     firebase_credentials_path: str = ""
     debug: bool = True
 
