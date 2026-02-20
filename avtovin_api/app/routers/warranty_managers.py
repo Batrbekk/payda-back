@@ -26,7 +26,7 @@ async def list_warranty_managers(
         .options(selectinload(User.created_warranties))
     )
     managers = result.scalars().all()
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
 
     return [
         WarrantyManagerOut(

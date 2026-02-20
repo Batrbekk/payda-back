@@ -42,7 +42,7 @@ async def send_code(body: SendCodeRequest, db: AsyncSession = Depends(get_db)):
     otp = OtpCode(
         phone=phone,
         code=code,
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
+        expires_at=datetime.utcnow() + timedelta(minutes=5),
     )
     db.add(otp)
     await db.commit()
@@ -62,7 +62,7 @@ async def verify_code(body: VerifyCodeRequest, db: AsyncSession = Depends(get_db
         raise HTTPException(status_code=400, detail="Телефон и код обязательны")
 
     # Find valid OTP
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     result = await db.execute(
         select(OtpCode)
         .where(

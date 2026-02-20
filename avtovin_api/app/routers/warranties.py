@@ -41,7 +41,7 @@ async def list_warranties(
             Warranty.vin.ilike(f"%{search}%"),
         ))
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     if filter == "active":
         query = query.where(Warranty.is_active == True, Warranty.end_date >= now)  # noqa: E712
     elif filter == "expired":

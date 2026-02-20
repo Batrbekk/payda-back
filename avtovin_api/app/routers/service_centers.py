@@ -161,7 +161,7 @@ async def get_my_service_center(
     if not sc:
         raise HTTPException(status_code=404, detail="Сервисный центр не найден")
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
@@ -205,7 +205,7 @@ async def get_my_finances(
     if not sc:
         raise HTTPException(status_code=404, detail="СЦ не найден")
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     month_name = f"{MONTH_NAMES[now.month]} {now.year}"
 
@@ -307,7 +307,7 @@ async def upload_receipt(
 
     if not settlements:
         # Auto-create settlement from current month
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
         visits_result = await db.execute(
