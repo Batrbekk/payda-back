@@ -11,6 +11,12 @@ from app.models.car import Car
 from app.models.service_center import ServiceCenter
 from app.models.user import User
 from app.models.visit import Visit
+from app.schemas.visit import (
+    VisitOut, VisitCreate, VisitListOut, VisitServiceOut,
+    CarBriefForVisit, UserBriefForVisit, ScBriefForVisit,
+)
+from app.services.event_service import publish_event
+from app.services.visit_service import create_visit
 
 
 def _visit_out(v: Visit) -> VisitOut:
@@ -32,12 +38,6 @@ def _visit_out(v: Visit) -> VisitOut:
         car=car_brief,
         service_center=sc_brief,
     )
-from app.schemas.visit import (
-    VisitOut, VisitCreate, VisitListOut, VisitServiceOut,
-    CarBriefForVisit, UserBriefForVisit, ScBriefForVisit,
-)
-from app.services.event_service import publish_event
-from app.services.visit_service import create_visit
 
 router = APIRouter(prefix="/api/visits", tags=["visits"])
 
