@@ -21,7 +21,7 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.detail || data.error);
 
       document.cookie = `token=${data.token}; path=/; max-age=${30 * 24 * 60 * 60}`;
       router.push("/admin");

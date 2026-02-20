@@ -11,7 +11,10 @@ from app.models.settlement import Settlement
 from app.models.user import User
 from app.models.visit import Visit
 from app.schemas.dashboard import DashboardOut, PartnersOut, UnpaidOut
-from app.schemas.visit import VisitOut, VisitServiceOut
+from app.schemas.visit import (
+    VisitOut, VisitServiceOut,
+    CarBriefForVisit, UserBriefForVisit, ScBriefForVisit,
+)
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -68,14 +71,39 @@ async def get_stats(
         .where(Settlement.is_paid == False)  # noqa: E712
     )).scalar() or 0
 
-    # Recent 10 visits
+    # Recent 10 visits with car (user) and service_center
     result = await db.execute(
         select(Visit)
-        .options(selectinload(Visit.services))
+        .options(
+            selectinload(Visit.services),
+            selectinload(Visit.car).selectinload(Car.user),
+            selectinload(Visit.service_center),
+        )
         .order_by(Visit.created_at.desc())
         .limit(10)
     )
     recent = result.scalars().all()
+
+    recent_out = []
+    for v in recent:
+        car_brief = None
+        if v.car:
+            user_brief = None
+            if v.car.user:
+                user_brief = UserBriefForVisit(name=v.car.user.name, phone=v.car.user.phone)
+            car_brief = CarBriefForVisit(
+                brand=v.car.brand, model=v.car.model,
+                plate_number=v.car.plate_number, user=user_brief,
+            )
+        sc_brief = None
+        if v.service_center:
+            sc_brief = ScBriefForVisit(name=v.service_center.name, type=v.service_center.type)
+        recent_out.append(VisitOut(
+            **{c.key: getattr(v, c.key) for c in Visit.__table__.columns},
+            services=[VisitServiceOut.model_validate(s) for s in v.services],
+            car=car_brief,
+            service_center=sc_brief,
+        ))
 
     return DashboardOut(
         total_users=total_users,
@@ -89,11 +117,5 @@ async def get_stats(
         total_cashback=total_cashback,
         total_cashback_balance=total_balance,
         unpaid_settlements=UnpaidOut(count=unpaid_count, amount=unpaid_amount),
-        recent_visits=[
-            VisitOut(
-                **{c.key: getattr(v, c.key) for c in Visit.__table__.columns},
-                services=[VisitServiceOut.model_validate(s) for s in v.services],
-            )
-            for v in recent
-        ],
+        recent_visits=recent_out,
     )

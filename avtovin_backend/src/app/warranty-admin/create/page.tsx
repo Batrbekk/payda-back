@@ -150,7 +150,7 @@ export default function CreateWarrantyPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.detail || data.error);
 
       setSuccess(true);
       setTimeout(() => router.push("/warranty-admin"), 1500);

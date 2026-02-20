@@ -13,7 +13,7 @@ from app.models.user import User
 from app.models.warranty import Warranty
 from app.schemas.warranty import (
     WarrantyOut, WarrantyCreate, WarrantyUpdate,
-    SearchUserOut, SearchCarOut,
+    SearchUserOut, SearchCarOut, UserBriefForWarranty,
 )
 
 router = APIRouter(prefix="/api/warranties", tags=["warranties"])
@@ -27,7 +27,7 @@ async def list_warranties(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Warranty)
+    query = select(Warranty).options(selectinload(Warranty.user))
 
     if current_user.role == "USER":
         query = query.where(Warranty.user_id == current_user.id)
@@ -49,7 +49,15 @@ async def list_warranties(
 
     query = query.order_by(Warranty.created_at.desc())
     result = await db.execute(query)
-    return [WarrantyOut.model_validate(w) for w in result.scalars().all()]
+    warranties = result.scalars().all()
+
+    out = []
+    for w in warranties:
+        wo = WarrantyOut.model_validate(w)
+        if w.user:
+            wo.user = UserBriefForWarranty(phone=w.user.phone, name=w.user.name)
+        out.append(wo)
+    return out
 
 
 @router.post("", response_model=WarrantyOut, status_code=201)

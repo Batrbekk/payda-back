@@ -12,6 +12,7 @@ from app.models.balance import BalanceTransaction
 from app.schemas.user import (
     UserOut, UserUpdate, UserListOut,
     FcmTokenRequest, BalanceOut, TransactionOut,
+    CarInfoBrief, UserCountOut,
 )
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -42,11 +43,26 @@ async def list_users(
     total_pages = math.ceil(total / limit) if total else 1
 
     query = query.order_by(User.created_at.desc()).offset((page - 1) * limit).limit(limit)
+    query = query.options(selectinload(User.cars))
     result = await db.execute(query)
     users = result.scalars().all()
 
+    users_out = []
+    for u in users:
+        cars = [
+            CarInfoBrief(id=c.id, brand=c.brand, model=c.model, year=c.year, plate_number=c.plate_number)
+            for c in u.cars
+        ]
+        uo = UserOut(
+            id=u.id, phone=u.phone, email=u.email, name=u.name, role=u.role,
+            balance=u.balance, fcm_token=u.fcm_token, salon_name=u.salon_name,
+            created_at=u.created_at, updated_at=u.updated_at,
+            cars=cars, count=UserCountOut(cars=len(u.cars)),
+        )
+        users_out.append(uo)
+
     return UserListOut(
-        users=[UserOut.model_validate(u) for u in users],
+        users=users_out,
         total=total,
         page=page,
         total_pages=total_pages,

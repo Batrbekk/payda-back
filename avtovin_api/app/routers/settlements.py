@@ -9,9 +9,18 @@ from app.models.service_center import ServiceCenter
 from app.models.settlement import Settlement
 from app.models.user import User
 from app.models.visit import Visit
-from app.schemas.settlement import SettlementOut, SettlementCreate, SettlementUpdate
+from app.schemas.settlement import SettlementOut, SettlementCreate, SettlementUpdate, ScBriefForSettlement
 
 router = APIRouter(prefix="/api/settlements", tags=["settlements"])
+
+
+def _settlement_out(s: Settlement) -> SettlementOut:
+    sc_brief = None
+    if s.service_center:
+        sc_brief = ScBriefForSettlement(name=s.service_center.name, type=s.service_center.type)
+    out = SettlementOut.model_validate(s)
+    out.service_center = sc_brief
+    return out
 
 
 @router.get("", response_model=list[SettlementOut])
@@ -20,14 +29,16 @@ async def list_settlements(
     _user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Settlement).order_by(Settlement.created_at.desc())
+    query = select(Settlement).options(
+        selectinload(Settlement.service_center)
+    ).order_by(Settlement.created_at.desc())
     if is_paid == "true":
         query = query.where(Settlement.is_paid == True)  # noqa: E712
     elif is_paid == "false":
         query = query.where(Settlement.is_paid == False)  # noqa: E712
 
     result = await db.execute(query)
-    return [SettlementOut.model_validate(s) for s in result.scalars().all()]
+    return [_settlement_out(s) for s in result.scalars().all()]
 
 
 @router.post("", status_code=201)
@@ -89,11 +100,14 @@ async def get_settlement(
     _user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Settlement).where(Settlement.id == settlement_id))
+    result = await db.execute(
+        select(Settlement).where(Settlement.id == settlement_id)
+        .options(selectinload(Settlement.service_center))
+    )
     settlement = result.scalar_one_or_none()
     if not settlement:
         raise HTTPException(status_code=404, detail="Не найдено")
-    return SettlementOut.model_validate(settlement)
+    return _settlement_out(settlement)
 
 
 @router.put("/{settlement_id}", response_model=SettlementOut)
@@ -118,8 +132,8 @@ async def update_settlement(
         setattr(settlement, field, value)
 
     await db.commit()
-    await db.refresh(settlement)
-    return SettlementOut.model_validate(settlement)
+    await db.refresh(settlement, ["service_center"])
+    return _settlement_out(settlement)
 
 
 @router.delete("/{settlement_id}")

@@ -11,7 +11,31 @@ from app.models.car import Car
 from app.models.service_center import ServiceCenter
 from app.models.user import User
 from app.models.visit import Visit
-from app.schemas.visit import VisitOut, VisitCreate, VisitListOut, VisitServiceOut
+
+
+def _visit_out(v: Visit) -> VisitOut:
+    car_brief = None
+    if v.car:
+        user_brief = None
+        if v.car.user:
+            user_brief = UserBriefForVisit(name=v.car.user.name, phone=v.car.user.phone)
+        car_brief = CarBriefForVisit(
+            brand=v.car.brand, model=v.car.model,
+            plate_number=v.car.plate_number, user=user_brief,
+        )
+    sc_brief = None
+    if v.service_center:
+        sc_brief = ScBriefForVisit(name=v.service_center.name, type=v.service_center.type)
+    return VisitOut(
+        **{c.key: getattr(v, c.key) for c in Visit.__table__.columns},
+        services=[VisitServiceOut.model_validate(s) for s in v.services],
+        car=car_brief,
+        service_center=sc_brief,
+    )
+from app.schemas.visit import (
+    VisitOut, VisitCreate, VisitListOut, VisitServiceOut,
+    CarBriefForVisit, UserBriefForVisit, ScBriefForVisit,
+)
 from app.services.event_service import publish_event
 from app.services.visit_service import create_visit
 
@@ -27,7 +51,11 @@ async def list_visits(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Visit).options(selectinload(Visit.services))
+    query = select(Visit).options(
+        selectinload(Visit.services),
+        selectinload(Visit.car).selectinload(Car.user),
+        selectinload(Visit.service_center),
+    )
     count_query = select(func.count(Visit.id))
 
     # USER can only see visits for their cars
@@ -52,13 +80,7 @@ async def list_visits(
     visits = result.scalars().all()
 
     return VisitListOut(
-        visits=[
-            VisitOut(
-                **{c.key: getattr(v, c.key) for c in Visit.__table__.columns},
-                services=[VisitServiceOut.model_validate(s) for s in v.services],
-            )
-            for v in visits
-        ],
+        visits=[_visit_out(v) for v in visits],
         total=total,
         page=page,
         total_pages=total_pages,
@@ -90,15 +112,14 @@ async def create_visit_endpoint(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # Reload with services and car
-    await db.refresh(visit, ["services", "car"])
+    # Reload with services, car (with user), and service_center
+    await db.refresh(visit, ["services", "car", "service_center"])
+    if visit.car:
+        await db.refresh(visit.car, ["user"])
 
     # Publish real-time event to car owner
     car = visit.car
-    sc_result = await db.execute(
-        select(ServiceCenter).where(ServiceCenter.id == visit.service_center_id)
-    )
-    sc = sc_result.scalar_one_or_none()
+    sc = visit.service_center
 
     redis = request.app.state.redis
     await publish_event(redis, car.user_id, "visit:created", {
@@ -113,10 +134,7 @@ async def create_visit_endpoint(
         "description": visit.description,
     })
 
-    return VisitOut(
-        **{c.key: getattr(visit, c.key) for c in Visit.__table__.columns},
-        services=[VisitServiceOut.model_validate(s) for s in visit.services],
-    )
+    return _visit_out(visit)
 
 
 @router.get("/{visit_id}", response_model=VisitOut)
@@ -128,7 +146,11 @@ async def get_visit(
     result = await db.execute(
         select(Visit)
         .where(Visit.id == visit_id)
-        .options(selectinload(Visit.services), selectinload(Visit.car))
+        .options(
+            selectinload(Visit.services),
+            selectinload(Visit.car).selectinload(Car.user),
+            selectinload(Visit.service_center),
+        )
     )
     visit = result.scalar_one_or_none()
     if not visit:
@@ -138,7 +160,4 @@ async def get_visit(
     if current_user.role == "USER" and visit.car.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Нет доступа")
 
-    return VisitOut(
-        **{c.key: getattr(visit, c.key) for c in Visit.__table__.columns},
-        services=[VisitServiceOut.model_validate(s) for s in visit.services],
-    )
+    return _visit_out(visit)

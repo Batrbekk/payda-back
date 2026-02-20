@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.schemas.base import CamelModel
 
@@ -34,6 +34,30 @@ class ScServiceOut(CamelModel):
     cashback_value: float | None = None
 
 
+class ManagerBrief(CamelModel):
+    phone: str
+    name: str | None = None
+
+
+class ServiceBrief(CamelModel):
+    id: str
+    name: str
+    category: str
+
+
+class ScServiceDetail(CamelModel):
+    id: str
+    service_center_id: str
+    service_id: str
+    price: int | None = None
+    is_flex_price: bool = False
+    service: ServiceBrief | None = None
+
+
+class ScCountOut(CamelModel):
+    visits: int = 0
+
+
 class ServiceCenterOut(CamelModel):
     id: str
     name: str
@@ -54,6 +78,9 @@ class ServiceCenterOut(CamelModel):
     created_at: datetime | None = None
     updated_at: datetime | None = None
     addresses: list[AddressOut] = []
+    manager: ManagerBrief | None = None
+    services: list[ScServiceDetail] = []
+    count: ScCountOut | None = Field(None, serialization_alias="_count")
 
 
 class ServiceCenterCreate(CamelModel):

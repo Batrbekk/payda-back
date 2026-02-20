@@ -29,6 +29,24 @@ class VisitServiceOut(CamelModel):
     details: str | None = None
 
 
+# Brief nested objects for admin panel
+class UserBriefForVisit(CamelModel):
+    name: str | None = None
+    phone: str
+
+
+class CarBriefForVisit(CamelModel):
+    brand: str
+    model: str
+    plate_number: str
+    user: UserBriefForVisit | None = None
+
+
+class ScBriefForVisit(CamelModel):
+    name: str
+    type: str
+
+
 class VisitOut(CamelModel):
     id: str
     car_id: str
@@ -42,6 +60,8 @@ class VisitOut(CamelModel):
     status: str
     created_at: datetime | None = None
     services: list[VisitServiceOut] = []
+    car: CarBriefForVisit | None = None
+    service_center: ScBriefForVisit | None = None
 
 
 class VisitListOut(CamelModel):

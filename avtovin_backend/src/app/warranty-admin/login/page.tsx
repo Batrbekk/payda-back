@@ -21,7 +21,7 @@ export default function WarrantyLoginPage() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.detail || data.error);
 
       document.cookie = `warranty_token=${data.token}; path=/; max-age=${30 * 24 * 60 * 60}`;
       router.push("/warranty-admin");

@@ -16,10 +16,33 @@ from app.schemas.service_center import (
     ServiceCenterOut, ServiceCenterCreate, ServiceCenterUpdate,
     AddressOut, ScServiceOut, ScDashboardOut, ScStatsOut,
     FinancesOut, MonthDataOut, FinanceVisitOut, SettlementBriefOut,
-    UploadReceiptRequest,
+    UploadReceiptRequest, ManagerBrief, ServiceBrief, ScServiceDetail, ScCountOut,
 )
 
 router = APIRouter(prefix="/api/service-centers", tags=["service-centers"])
+
+
+def _sc_out(sc: ServiceCenter, visit_count: int = 0) -> ServiceCenterOut:
+    manager_brief = None
+    if sc.manager:
+        manager_brief = ManagerBrief(phone=sc.manager.phone, name=sc.manager.name)
+    svc_details = []
+    for scs in sc.services:
+        svc_brief = None
+        if scs.service:
+            svc_brief = ServiceBrief(id=scs.service.id, name=scs.service.name, category=scs.service.category)
+        svc_details.append(ScServiceDetail(
+            id=scs.id, service_center_id=scs.service_center_id,
+            service_id=scs.service_id, price=scs.price,
+            is_flex_price=scs.is_flex_price, service=svc_brief,
+        ))
+    return ServiceCenterOut(
+        **{c.key: getattr(sc, c.key) for c in ServiceCenter.__table__.columns},
+        addresses=[AddressOut.model_validate(a) for a in sc.addresses],
+        manager=manager_brief,
+        services=svc_details,
+        count=ScCountOut(visits=visit_count),
+    )
 
 MONTH_NAMES = [
     "", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -35,7 +58,9 @@ async def list_service_centers(
     db: AsyncSession = Depends(get_db),
 ):
     query = select(ServiceCenter).where(ServiceCenter.is_active == True).options(  # noqa: E712
-        selectinload(ServiceCenter.addresses)
+        selectinload(ServiceCenter.addresses),
+        selectinload(ServiceCenter.manager),
+        selectinload(ServiceCenter.services).selectinload(ServiceCenterService.service),
     )
     if city:
         query = query.where(ServiceCenter.city == city)
@@ -48,13 +73,19 @@ async def list_service_centers(
     result = await db.execute(query)
     scs = result.scalars().all()
 
-    return [
-        ServiceCenterOut(
-            **{c.key: getattr(sc, c.key) for c in ServiceCenter.__table__.columns},
-            addresses=[AddressOut.model_validate(a) for a in sc.addresses],
+    # Batch count visits per SC
+    sc_ids = [sc.id for sc in scs]
+    visit_counts: dict[str, int] = {}
+    if sc_ids:
+        count_result = await db.execute(
+            select(Visit.service_center_id, func.count(Visit.id))
+            .where(Visit.service_center_id.in_(sc_ids))
+            .group_by(Visit.service_center_id)
         )
-        for sc in scs
-    ]
+        for sc_id, cnt in count_result.all():
+            visit_counts[sc_id] = cnt
+
+    return [_sc_out(sc, visit_counts.get(sc.id, 0)) for sc in scs]
 
 
 @router.post("", response_model=ServiceCenterOut, status_code=201)
@@ -109,11 +140,8 @@ async def create_service_center(
         ))
 
     await db.commit()
-    await db.refresh(sc, ["addresses"])
-    return ServiceCenterOut(
-        **{c.key: getattr(sc, c.key) for c in ServiceCenter.__table__.columns},
-        addresses=[AddressOut.model_validate(a) for a in sc.addresses],
-    )
+    await db.refresh(sc, ["addresses", "manager", "services"])
+    return _sc_out(sc, 0)
 
 
 @router.get("/my", response_model=ScDashboardOut)
@@ -323,16 +351,21 @@ async def get_service_center(
 ):
     result = await db.execute(
         select(ServiceCenter).where(ServiceCenter.id == sc_id)
-        .options(selectinload(ServiceCenter.addresses))
+        .options(
+            selectinload(ServiceCenter.addresses),
+            selectinload(ServiceCenter.manager),
+            selectinload(ServiceCenter.services).selectinload(ServiceCenterService.service),
+        )
     )
     sc = result.scalar_one_or_none()
     if not sc:
         raise HTTPException(status_code=404, detail="СЦ не найден")
 
-    return ServiceCenterOut(
-        **{c.key: getattr(sc, c.key) for c in ServiceCenter.__table__.columns},
-        addresses=[AddressOut.model_validate(a) for a in sc.addresses],
-    )
+    cnt = (await db.execute(
+        select(func.count(Visit.id)).where(Visit.service_center_id == sc.id)
+    )).scalar() or 0
+
+    return _sc_out(sc, cnt)
 
 
 @router.put("/{sc_id}", response_model=ServiceCenterOut)
@@ -394,11 +427,13 @@ async def update_service_center(
         setattr(sc, field, value)
 
     await db.commit()
-    await db.refresh(sc, ["addresses"])
-    return ServiceCenterOut(
-        **{c.key: getattr(sc, c.key) for c in ServiceCenter.__table__.columns},
-        addresses=[AddressOut.model_validate(a) for a in sc.addresses],
-    )
+    await db.refresh(sc, ["addresses", "manager", "services"])
+
+    cnt = (await db.execute(
+        select(func.count(Visit.id)).where(Visit.service_center_id == sc.id)
+    )).scalar() or 0
+
+    return _sc_out(sc, cnt)
 
 
 @router.delete("/{sc_id}")

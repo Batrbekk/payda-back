@@ -1,6 +1,20 @@
 from datetime import datetime
 
+from pydantic import Field
+
 from app.schemas.base import CamelModel
+
+
+class CarInfoBrief(CamelModel):
+    id: str
+    brand: str | None = None
+    model: str | None = None
+    year: int | None = None
+    plate_number: str | None = None
+
+
+class UserCountOut(CamelModel):
+    cars: int = 0
 
 
 class UserOut(CamelModel):
@@ -14,6 +28,8 @@ class UserOut(CamelModel):
     salon_name: str | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
+    cars: list[CarInfoBrief] = []
+    count: UserCountOut | None = Field(None, serialization_alias="_count")
 
 
 class UserUpdate(CamelModel):

@@ -3,6 +3,11 @@ from datetime import datetime
 from app.schemas.base import CamelModel
 
 
+class UserBriefForWarranty(CamelModel):
+    phone: str
+    name: str | None = None
+
+
 class WarrantyOut(CamelModel):
     id: str
     contract_number: str
@@ -19,6 +24,7 @@ class WarrantyOut(CamelModel):
     created_by_id: str
     created_at: datetime | None = None
     updated_at: datetime | None = None
+    user: UserBriefForWarranty | None = None
 
 
 class WarrantyCreate(CamelModel):

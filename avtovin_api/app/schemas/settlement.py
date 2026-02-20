@@ -3,6 +3,11 @@ from datetime import datetime
 from app.schemas.base import CamelModel
 
 
+class ScBriefForSettlement(CamelModel):
+    name: str
+    type: str
+
+
 class SettlementOut(CamelModel):
     id: str
     service_center_id: str
@@ -15,6 +20,7 @@ class SettlementOut(CamelModel):
     receipt_url: str | None = None
     receipt_status: str = "NONE"
     created_at: datetime | None = None
+    service_center: ScBriefForSettlement | None = None
 
 
 class SettlementCreate(CamelModel):

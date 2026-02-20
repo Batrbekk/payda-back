@@ -67,7 +67,7 @@ export default function WarrantyManagersPage() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.detail || data.error);
       setShowForm(false);
       setForm({ phone: "", name: "", email: "", password: "", salonName: "" });
       fetchManagers();
