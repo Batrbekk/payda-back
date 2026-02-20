@@ -4,18 +4,18 @@ import redis.asyncio as aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import settings
+from app.config import settings as app_settings
 from app.routers import (
     auth, users, cars, car_catalog, services, service_centers, visits,
-    warranties, warranty_managers, settlements, banners, dashboard, settings,
-    events, seed,
+    warranties, warranty_managers, settlements, banners, dashboard,
+    settings as settings_router, events, seed,
 )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: connect Redis
-    app.state.redis = aioredis.from_url(settings.redis_url, decode_responses=True)
+    app.state.redis = aioredis.from_url(app_settings.redis_url, decode_responses=True)
     yield
     # Shutdown: close Redis
     await app.state.redis.close()
@@ -44,7 +44,7 @@ app.include_router(warranty_managers.router)
 app.include_router(settlements.router)
 app.include_router(banners.router)
 app.include_router(dashboard.router)
-app.include_router(settings.router)
+app.include_router(settings_router.router)
 app.include_router(events.router)
 app.include_router(seed.router)
 
