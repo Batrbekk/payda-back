@@ -6,6 +6,11 @@ avtovin_app/
 *.png
 *.svg
 
+# But allow public assets for the landing
+!avtovin_backend/public/**/*.png
+!avtovin_backend/public/**/*.svg
+!avtovin_backend/src/app/favicon.ico
+
 # Docs & local files
 *.md
 .DS_Store
