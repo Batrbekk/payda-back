@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models.service_center import ServiceCenter, ServiceCenterAddress, ServiceCenterService
 from app.models.service import Service
-from app.dependencies import get_current_admin
+from app.dependencies import require_admin
 
 router = APIRouter(prefix="/api/landing", tags=["landing"])
 
@@ -61,7 +61,7 @@ async def get_landing_partners(
 @router.put("/partners/{sc_id}/visibility")
 async def toggle_partner_visibility(
     sc_id: str,
-    admin=Depends(get_current_admin),
+    admin=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Admin: toggle show_on_landing for a partner."""

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import Link from "next/link";
 import {
   ShieldCheck,
   Download,
@@ -89,19 +90,42 @@ const FEATURES = [
 ];
 
 const STEPS = [
-  { num: "1", title: "Скачайте Payda", desc: "Установите приложение нашего партнёра Payda и добавьте данные авто", color: "#4F56D3" },
-  { num: "2", title: "Посетите сервис-центр", desc: "Покажите QR-код из приложения Payda", color: "#4F56D3" },
-  { num: "3", title: "Получите кешбэк от Payda", desc: "500₸ от Payda автоматически зачисляется на ваш счёт", color: "#E27109" },
+  { num: "1", title: "Свяжитесь с менеджером", desc: "Оставьте заявку на сайте или позвоните — мы назначим первичный осмотр вашего автомобиля", color: "#4F56D3" },
+  { num: "2", title: "Пройдите осмотр", desc: "После осмотра и подтверждения состояния авто ваша гарантия активируется в приложении Payda", color: "#4F56D3" },
+  { num: "3", title: "Обслуживайтесь с выгодой", desc: "Посещайте партнёрские СЦ, показывайте QR-код и получайте кешбэк 500₸ за каждый визит", color: "#E27109" },
 ];
 
 const STATS = [
-  { num: "50+", label: "Сервисных центров", color: "#FFFFFF" },
-  { num: "10+", label: "Городов Казахстана", color: "#FFFFFF" },
-  { num: "500₸", label: "Кешбэк за визит", color: "#E27109" },
-  { num: "2000₸", label: "Доход для СЦ за визит", color: "#4F56D3" },
+  { value: 50, suffix: "+", label: "Сервисных центров", color: "#FFFFFF" },
+  { value: 10, suffix: "+", label: "Городов Казахстана", color: "#FFFFFF" },
+  { value: 500, suffix: "₸", label: "Кешбэк за визит", color: "#E27109" },
 ];
 
 const AVATAR_COLORS = ["#4F56D3", "#E27109", "#005D4A", "#CA1F1F", "#1976D2", "#7B1FA2"];
+
+function CountUp({ value, suffix, duration = 2000 }: { value: number; suffix: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    let start = 0;
+    const startTime = performance.now();
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      start = Math.round(eased * value);
+      setCount(start);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [inView, value, duration]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
 
 /* ─── main component ─── */
 export default function Home() {
@@ -109,6 +133,23 @@ export default function Home() {
   const [cities, setCities] = useState<{ name: string; count: number }[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [activeCity, setActiveCity] = useState<string | null>(null);
+  const [hp, setHp] = useState(0); // header progress 0→1
+  const heroRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (!heroRef.current) return;
+      const heroH = heroRef.current.offsetHeight;
+      const start = 80;    // start after 80px scroll
+      const end = heroH;   // finish at end of hero — full range ~800-900px
+      const raw = (window.scrollY - start) / (end - start);
+      setHp(Math.max(0, Math.min(1, raw)));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrolled = hp > 0.5; // boolean for text/menu styles
 
   useEffect(() => {
     fetch("/api/landing/cities")
@@ -136,84 +177,125 @@ export default function Home() {
   return (
     <div className="font-[family-name:var(--font-inter)] overflow-x-hidden">
       {/* ═══════════ HEADER ═══════════ */}
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-32px)] max-w-[1200px]"
-      >
-        <nav className="flex items-center justify-between px-6 lg:px-8 h-14 rounded-full bg-white/[0.07] backdrop-blur-xl border border-white/[0.13] shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
-          <span className="text-white font-bold text-lg tracking-tight">
-            casco<span className="text-[#4F56D3]">.</span>kz
-          </span>
+      {(() => {
+        const t = hp; // progress 0→1
+        // Interpolated values
+        const headerTop = 16 * (1 - t);
+        const navRadius = Math.round(28 * (1 - t)); // 28px → 0px (pill → flat)
+        const navMaxW = 1200 + (typeof window !== "undefined" ? window.innerWidth - 1200 : 800) * t;
+        // BG: rgba(255,255,255,0.07) → rgba(10,11,43,0.9)
+        const bgR = Math.round(255 + (10 - 255) * t);
+        const bgG = Math.round(255 + (11 - 255) * t);
+        const bgB = Math.round(255 + (43 - 255) * t);
+        const bgA = +(0.07 + (0.9 - 0.07) * t).toFixed(3);
+        // Border: rgba(255,255,255,0.13) → rgba(79,86,211,0.3)
+        const brR = Math.round(255 + (79 - 255) * t);
+        const brG = Math.round(255 + (86 - 255) * t);
+        const brB = Math.round(255 + (211 - 255) * t);
+        const brA = +(0.13 + (0.3 - 0.13) * t).toFixed(3);
+        // Shadow: dark → purple glow
+        const shR = Math.round(0 + 79 * t);
+        const shG = Math.round(0 + 86 * t);
+        const shB = Math.round(0 + 211 * t);
+        const shA = +(0.08 + 0.07 * t).toFixed(3);
+        const shBlur = Math.round(20 + 10 * t);
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-8">
-            {[
-              { label: "Преимущества", id: "features" },
-              { label: "Как это работает", id: "how" },
-              { label: "Партнёры", id: "partners" },
-              { label: "Контакты", id: "contacts" },
-            ].map((n) => (
-              <button
-                key={n.id}
-                onClick={() => scrollTo(n.id)}
-                className="text-[13px] font-medium text-white/80 hover:text-white transition-colors cursor-pointer"
-              >
-                {n.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => scrollTo("cta")}
-              className="hidden md:flex items-center bg-[#4F56D3] text-white text-[13px] font-semibold px-5 py-2.5 rounded-full hover:bg-[#3D43A8] transition-colors cursor-pointer"
-            >
-              Скачать приложение
-            </button>
-            <button
-              className="md:hidden text-white/80"
-              onClick={() => setMobileMenu(!mobileMenu)}
-            >
-              {mobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </nav>
-
-        {/* Mobile menu */}
-        {mobileMenu && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="md:hidden mt-2 rounded-2xl bg-[#14181F]/95 backdrop-blur-xl border border-white/10 p-4 flex flex-col gap-3"
+        return (
+          <motion.header
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="fixed left-0 w-full z-50"
+            style={{ top: headerTop }}
           >
-            {[
-              { label: "Преимущества", id: "features" },
-              { label: "Как это работает", id: "how" },
-              { label: "Партнёры", id: "partners" },
-              { label: "Контакты", id: "contacts" },
-            ].map((n) => (
-              <button
-                key={n.id}
-                onClick={() => scrollTo(n.id)}
-                className="text-sm text-white/80 hover:text-white py-2 text-left cursor-pointer"
-              >
-                {n.label}
-              </button>
-            ))}
-            <button
-              onClick={() => scrollTo("cta")}
-              className="bg-[#4F56D3] text-white text-sm font-semibold py-3 rounded-xl mt-1 cursor-pointer"
+            <nav
+              className="mx-auto flex items-center justify-between px-6 lg:px-8 h-14"
+              style={{
+                maxWidth: navMaxW,
+                borderRadius: navRadius,
+                backgroundColor: `rgba(${bgR},${bgG},${bgB},${bgA})`,
+                border: `1px solid rgba(${brR},${brG},${brB},${brA})`,
+                boxShadow: `0 4px ${shBlur}px rgba(${shR},${shG},${shB},${shA})`,
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+              }}
             >
-              Скачать приложение
-            </button>
-          </motion.div>
-        )}
-      </motion.header>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-land.svg" alt="casco.kz" className="h-7" />
+
+              {/* Desktop nav */}
+              <div className="hidden md:flex items-center gap-8">
+                {[
+                  { label: "Преимущества", id: "features" },
+                  { label: "Как это работает", id: "how" },
+                  { label: "Партнёры", id: "partners" },
+                  { label: "Контакты", id: "contacts" },
+                ].map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => scrollTo(n.id)}
+                    className="text-[13px] font-medium text-white/80 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {n.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => scrollTo("cta")}
+                  className="hidden md:flex items-center bg-[#4F56D3] text-white text-[13px] font-semibold px-5 py-2.5 rounded-full hover:bg-[#3D43A8] transition-colors cursor-pointer"
+                >
+                  Скачать приложение
+                </button>
+                <button
+                  className="md:hidden text-white/80"
+                  onClick={() => setMobileMenu(!mobileMenu)}
+                >
+                  {mobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+              </div>
+            </nav>
+
+            {/* Mobile menu */}
+            {mobileMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`md:hidden mt-2 backdrop-blur-xl border p-4 flex flex-col gap-3 ${
+                  scrolled
+                    ? "rounded-b-2xl bg-[#0A0B2B]/95 border-[#4F56D3]/20"
+                    : "rounded-2xl bg-[#14181F]/95 border-white/10"
+                }`}
+              >
+                {[
+                  { label: "Преимущества", id: "features" },
+                  { label: "Как это работает", id: "how" },
+                  { label: "Партнёры", id: "partners" },
+                  { label: "Контакты", id: "contacts" },
+                ].map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => scrollTo(n.id)}
+                    className="text-sm text-white/80 hover:text-white py-2 text-left cursor-pointer"
+                  >
+                    {n.label}
+                  </button>
+                ))}
+                <button
+                  onClick={() => scrollTo("cta")}
+                  className="bg-[#4F56D3] text-white text-sm font-semibold py-3 rounded-xl mt-1 cursor-pointer"
+                >
+                  Скачать приложение
+                </button>
+              </motion.div>
+            )}
+          </motion.header>
+        );
+      })()}
 
       {/* ═══════════ HERO ═══════════ */}
-      <section className="relative min-h-screen bg-gradient-to-b from-[#0A0B2B] via-[#1a1b4b] to-[#2a1b5b] overflow-hidden">
+      <section ref={heroRef} className="relative min-h-screen bg-gradient-to-b from-[#0A0B2B] via-[#1a1b4b] to-[#2a1b5b] overflow-hidden">
         {/* Decorative blobs */}
         <div className="absolute -top-12 -left-24 w-[500px] h-[500px] bg-[#4F56D3]/50 rounded-full blur-[120px]" />
         <div className="absolute top-24 right-[-50px] w-[400px] h-[400px] bg-[#7B61FF]/25 rounded-full blur-[100px]" />
@@ -273,33 +355,31 @@ export default function Home() {
           >
             {STATS.map((s, i) => (
               <motion.div key={s.label} variants={fadeUp} custom={i} className="flex flex-col items-center gap-1">
-                <span className="text-2xl lg:text-4xl font-bold" style={{ color: s.color }}>{s.num}</span>
+                <span className="text-2xl lg:text-4xl font-bold" style={{ color: s.color }}>
+                  <CountUp value={s.value} suffix={s.suffix} duration={2000 + i * 300} />
+                </span>
                 <span className="text-[#B8C2F3] text-xs lg:text-sm">{s.label}</span>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Phone mockups */}
-          <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.8 }}
-            className="relative flex justify-center items-end gap-[-20px] h-[280px] md:h-[440px] w-full max-w-[900px] overflow-hidden"
-          >
-            {/* Left phone */}
-            <div className="absolute left-[calc(50%-310px)] md:left-[calc(50%-340px)] bottom-0 w-[180px] md:w-[260px] h-[320px] md:h-[520px] bg-[#14181F] rounded-[28px] md:rounded-[36px] border-[3px] border-[#29303D] rotate-6 shadow-[0_20px_60px_rgba(79,86,211,0.25)] hidden sm:block">
-              <div className="m-2 md:m-2.5 h-[calc(100%-16px)] md:h-[calc(100%-20px)] bg-white rounded-[22px] md:rounded-[26px]" />
-            </div>
-            {/* Center phone */}
-            <div className="relative w-[220px] md:w-[280px] h-[360px] md:h-[560px] bg-[#14181F] rounded-[32px] md:rounded-[40px] border-[4px] border-[#29303D] shadow-[0_24px_80px_rgba(79,86,211,0.37)] z-10">
-              <div className="m-2.5 md:m-3 h-[calc(100%-20px)] md:h-[calc(100%-24px)] bg-white rounded-[24px] md:rounded-[28px]" />
-            </div>
-            {/* Right phone */}
-            <div className="absolute right-[calc(50%-310px)] md:right-[calc(50%-340px)] bottom-0 w-[180px] md:w-[260px] h-[320px] md:h-[520px] bg-[#14181F] rounded-[28px] md:rounded-[36px] border-[3px] border-[#29303D] -rotate-6 shadow-[0_20px_60px_rgba(79,86,211,0.25)] hidden sm:block">
-              <div className="m-2 md:m-2.5 h-[calc(100%-16px)] md:h-[calc(100%-20px)] bg-white rounded-[22px] md:rounded-[26px]" />
-            </div>
-          </motion.div>
+          {/* Phone mockups — spacer for flow */}
+          <div className="h-0 w-full" />
         </div>
+        {/* Phone mockups — outside padded container for edge-to-edge on mobile */}
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.8 }}
+          className="relative w-full md:max-w-[900px] md:mx-auto h-[360px] md:h-[440px] overflow-hidden"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/phones-hero.webp"
+            alt="Приложение Payda — QR сканер, главная, история"
+            className="w-full h-full object-cover object-top scale-100 md:object-contain"
+          />
+        </motion.div>
       </section>
 
       {/* ═══════════ FEATURES ═══════════ */}
@@ -360,6 +440,21 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+          <motion.div
+            variants={fadeUp}
+            custom={4}
+            className="bg-white rounded-2xl border border-[#CCD0D8] px-8 py-6 flex items-start gap-5 w-full max-w-[900px]"
+          >
+            <div className="w-12 h-12 rounded-full bg-[#EEF0FC] flex items-center justify-center flex-shrink-0">
+              <ShieldCheck className="w-6 h-6 text-[#4F56D3]" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-lg font-bold text-[#14181F]">Авто из автосалона?</span>
+              <span className="text-base text-[#8592AD] leading-relaxed">
+                Гарантия активируется автоматически — осмотр не требуется.
+              </span>
+            </div>
+          </motion.div>
         </div>
       </Section>
 
@@ -476,18 +571,17 @@ export default function Home() {
           {/* Top */}
           <div className="flex flex-col lg:flex-row justify-between gap-10">
             <div className="max-w-[320px] flex flex-col gap-4">
-              <span className="text-white font-bold text-xl">
-                casco<span className="text-[#4F56D3]">.</span>kz
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-land.svg" alt="casco.kz" className="h-8 self-start" />
               <p className="text-[13px] text-[#8592AD] leading-relaxed">
                 Автострахование нового поколения с кешбэком для владельцев.
               </p>
               <div className="flex flex-col gap-3 mt-2">
-                <a href="mailto:info@casco.kz" className="flex items-center gap-2 text-sm text-[#8592AD] hover:text-white transition-colors">
-                  <Mail className="w-4 h-4" /> info@casco.kz
+                <a href="mailto:paydacasco@gmail.com" className="flex items-center gap-2 text-sm text-[#8592AD] hover:text-white transition-colors">
+                  <Mail className="w-4 h-4" /> paydacasco@gmail.com
                 </a>
-                <a href="tel:+77001234567" className="flex items-center gap-2 text-sm text-[#8592AD] hover:text-white transition-colors">
-                  <Phone className="w-4 h-4" /> +7 700 123 45 67
+                <a href="tel:+77072292441" className="flex items-center gap-2 text-sm text-[#8592AD] hover:text-white transition-colors">
+                  <Phone className="w-4 h-4" /> +7 707 229 24 41
                 </a>
               </div>
             </div>
@@ -501,8 +595,8 @@ export default function Home() {
               </div>
               <div className="flex flex-col gap-4">
                 <span className="text-sm font-semibold text-white">Информация</span>
-                <a href="#" className="text-sm text-[#8592AD] hover:text-white transition-colors">Политика конфиденциальности</a>
-                <a href="#" className="text-sm text-[#8592AD] hover:text-white transition-colors">Условия использования</a>
+                <Link href="/privacy" className="text-sm text-[#8592AD] hover:text-white transition-colors">Политика конфиденциальности</Link>
+                <Link href="/terms" className="text-sm text-[#8592AD] hover:text-white transition-colors">Условия использования</Link>
               </div>
             </div>
           </div>
@@ -514,8 +608,8 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-[13px] text-[#8592AD]">&copy; 2026 casco.kz. Все права защищены.</p>
             <div className="flex gap-6">
-              <a href="#" className="text-[13px] text-[#8592AD] hover:text-white transition-colors">Политика конфиденциальности</a>
-              <a href="#" className="text-[13px] text-[#8592AD] hover:text-white transition-colors">Условия</a>
+              <Link href="/privacy" className="text-[13px] text-[#8592AD] hover:text-white transition-colors">Политика конфиденциальности</Link>
+              <Link href="/terms" className="text-[13px] text-[#8592AD] hover:text-white transition-colors">Условия</Link>
             </div>
           </div>
         </div>
