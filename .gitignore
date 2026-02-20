@@ -1,0 +1,37 @@
+# Mobile app (separate repo)
+avtovin_app/
+
+# Design files
+*.pen
+*.png
+*.svg
+
+# Docs & local files
+*.md
+.DS_Store
+.claude/
+AuthKey_*.p8
+GoogleService-Info.plist
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+avtovin_api/venv/
+avtovin_api/.venv/
+
+# Node
+avtovin_backend/node_modules/
+avtovin_backend/.next/
+avtovin_backend/dev.db
+
+# Environment (secrets)
+.env
+avtovin_api/.env
+avtovin_backend/.env
+
+# SSL certs
+certbot/
+
+# Firebase credentials
+firebase-credentials.json

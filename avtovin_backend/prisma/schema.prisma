@@ -1,0 +1,305 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  email     String?  @unique
+  password  String?
+  name      String?
+  role      String   @default("USER")
+  fcmToken  String?  @map("fcm_token")
+  salonName String?  @map("salon_name")
+  balance   Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cars                Car[]
+  serviceCenter       ServiceCenter?
+  warranties          Warranty[]
+  createdWarranties   Warranty[]            @relation("WarrantyCreator")
+  balanceTransactions BalanceTransaction[]
+
+  @@map("users")
+}
+
+model Car {
+  id            String    @id @default(cuid())
+  vin           String?
+  brand         String
+  model         String
+  year          Int
+  plateNumber   String    @map("plate_number")
+  mileage       Int?
+  generation    String?
+  engineType    String?   @map("engine_type")
+  lastServiceAt DateTime? @map("last_service_at")
+  photoUrl      String?   @map("photo_url")
+  userId        String    @map("user_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visits     Visit[]
+  warranties Warranty[]
+
+  @@unique([plateNumber, userId])
+  @@unique([vin, userId])
+  @@map("cars")
+}
+
+// ===== CAR CATALOG =====
+
+model CarBrand {
+  id     String     @id @default(cuid())
+  name   String     @unique
+  models CarModel[]
+
+  @@map("car_brands")
+}
+
+model CarModel {
+  id          String          @id @default(cuid())
+  name        String
+  brandId     String          @map("brand_id")
+  brand       CarBrand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  generations CarGeneration[]
+
+  @@unique([brandId, name])
+  @@map("car_models")
+}
+
+model CarGeneration {
+  id          String  @id @default(cuid())
+  name        String
+  yearFrom    Int     @map("year_from")
+  yearTo      Int?    @map("year_to")
+  engineTypes String  @map("engine_types")
+  modelId     String  @map("model_id")
+  model       CarModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@unique([modelId, name])
+  @@map("car_generations")
+}
+
+// ===== SERVICES CATALOG =====
+
+model Service {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  category        String   @default("general")
+  commissionType  String   @default("percent") @map("commission_type")
+  commissionValue Int      @default(20) @map("commission_value")
+  cashbackType    String   @default("percent") @map("cashback_type")
+  cashbackValue   Int      @default(25) @map("cashback_value")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  serviceCenterServices ServiceCenterService[]
+
+  @@map("services")
+}
+
+// ===== SERVICE CENTERS =====
+
+model ServiceCenter {
+  id                String   @id @default(cuid())
+  name              String
+  type              String   @default("SERVICE_CENTER")
+  description       String?
+  city              String   @default("Алматы")
+  phone             String?
+  rating            Float    @default(0)
+  isActive          Boolean  @default(true) @map("is_active")
+  commissionPercent Float    @default(0) @map("commission_percent")
+  discountPercent   Float    @default(0) @map("discount_percent")
+  logoUrl           String?  @map("logo_url")
+  link2gis          String?  @map("link_2gis")
+  linkInstagram     String?  @map("link_instagram")
+  linkWebsite       String?  @map("link_website")
+  linkWhatsapp      String?  @map("link_whatsapp")
+  managerId         String?  @unique @map("manager_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  manager     User?                  @relation(fields: [managerId], references: [id])
+  addresses   ServiceCenterAddress[]
+  services    ServiceCenterService[]
+  visits      Visit[]
+  settlements Settlement[]
+
+  @@map("service_centers")
+}
+
+model ServiceCenterAddress {
+  id              String @id @default(cuid())
+  address         String
+  city            String @default("Алматы")
+  lat             Float?
+  lng             Float?
+  serviceCenterId String @map("service_center_id")
+
+  serviceCenter ServiceCenter @relation(fields: [serviceCenterId], references: [id], onDelete: Cascade)
+
+  @@map("service_center_addresses")
+}
+
+model ServiceCenterService {
+  id              String  @id @default(cuid())
+  serviceCenterId String  @map("service_center_id")
+  serviceId       String  @map("service_id")
+  price           Int?
+  isFlexPrice     Boolean @default(false) @map("is_flex_price")
+
+  serviceCenter ServiceCenter @relation(fields: [serviceCenterId], references: [id], onDelete: Cascade)
+  service       Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceCenterId, serviceId])
+  @@map("service_center_services")
+}
+
+model Visit {
+  id              String   @id @default(cuid())
+  carId           String   @map("car_id")
+  serviceCenterId String   @map("service_center_id")
+  description     String
+  cost            Int
+  mileage         Int?
+  cashback        Int      @default(0)
+  cashbackUsed    Int      @default(0) @map("cashback_used")
+  serviceFee      Int      @default(0) @map("service_fee")
+  status          String   @default("COMPLETED")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  car                 Car                  @relation(fields: [carId], references: [id], onDelete: Cascade)
+  serviceCenter       ServiceCenter        @relation(fields: [serviceCenterId], references: [id])
+  services            VisitService[]
+  balanceTransactions BalanceTransaction[]
+
+  @@map("visits")
+}
+
+model VisitService {
+  id          String  @id @default(cuid())
+  visitId     String  @map("visit_id")
+  serviceName String  @map("service_name")
+  price       Int
+  commission  Int
+  cashback    Int
+  details     String?
+
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@map("visit_services")
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime @map("expires_at")
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("otp_codes")
+}
+
+model Banner {
+  id          String   @id @default(cuid())
+  type        String   @default("promo")
+  title       String
+  subtitle    String?
+  description String?
+  imageUrl    String?  @map("image_url")
+  actionType  String   @default("none") @map("action_type")
+  actionValue String?  @map("action_value")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  conditions  String?
+  winners     String?
+  prizeTitle  String?  @map("prize_title")
+  prizeImage  String?  @map("prize_image")
+  drawDate    String?  @map("draw_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("banners")
+}
+
+// ===== WARRANTIES =====
+
+model Warranty {
+  id              String   @id @default(cuid())
+  contractNumber  String   @unique @map("contract_number")
+  userId          String   @map("user_id")
+  carId           String   @map("car_id")
+  clientName      String   @map("client_name")
+  vin             String
+  brand           String
+  model           String
+  year            Int
+  startDate       DateTime @map("start_date")
+  endDate         DateTime @map("end_date")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdById     String   @map("created_by_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  car       Car  @relation(fields: [carId], references: [id], onDelete: Cascade)
+  createdBy User @relation("WarrantyCreator", fields: [createdById], references: [id])
+
+  @@map("warranties")
+}
+
+// ===== APP SETTINGS =====
+
+model AppSettings {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+
+  @@map("app_settings")
+}
+
+// ===== BALANCE & TRANSACTIONS =====
+
+model BalanceTransaction {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  amount      Int
+  type        String
+  description String
+  visitId     String?  @map("visit_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visit Visit? @relation(fields: [visitId], references: [id])
+
+  @@map("balance_transactions")
+}
+
+// ===== SETTLEMENTS (ВЗАИМОРАСЧЁТ) =====
+
+model Settlement {
+  id                    String   @id @default(cuid())
+  serviceCenterId       String   @map("service_center_id")
+  periodStart           DateTime @map("period_start")
+  periodEnd             DateTime @map("period_end")
+  totalCommission       Int      @map("total_commission")
+  totalCashbackRedeemed Int      @map("total_cashback_redeemed")
+  netAmount             Int      @map("net_amount")
+  isPaid                Boolean  @default(false) @map("is_paid")
+  receiptUrl            String?  @map("receipt_url")
+  receiptStatus         String   @default("NONE") @map("receipt_status")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  serviceCenter ServiceCenter @relation(fields: [serviceCenterId], references: [id])
+
+  @@map("settlements")
+}
