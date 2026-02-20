@@ -4,21 +4,22 @@ from app.config import settings
 
 
 async def send_sms(phone: str, code: str) -> bool:
-    recipient = phone.lstrip("+")
     text = f"Payda: Ваш код подтверждения: {code}"
 
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.get(
-                f"{settings.mobizon_api_url}/service/message/sendSmsMessage",
+                "https://smsc.kz/sys/send.php",
                 params={
-                    "apiKey": settings.mobizon_api_key,
-                    "recipient": recipient,
-                    "text": text,
-                    "output": "json",
+                    "login": settings.smsc_login,
+                    "psw": settings.smsc_password,
+                    "phones": phone,
+                    "mes": text,
+                    "fmt": 3,
+                    "charset": "utf-8",
                 },
             )
             data = resp.json()
-            return data.get("code") == 0
+            return "id" in data
     except Exception:
         return False
