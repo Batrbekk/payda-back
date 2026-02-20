@@ -75,6 +75,7 @@ class ServiceCenterOut(CamelModel):
     link_website: str | None = None
     link_whatsapp: str | None = None
     manager_id: str | None = None
+    show_on_landing: bool = True
     created_at: datetime | None = None
     updated_at: datetime | None = None
     addresses: list[AddressOut] = []

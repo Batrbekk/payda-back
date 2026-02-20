@@ -26,6 +26,7 @@ class ServiceCenter(Base):
     link_website: Mapped[str | None] = mapped_column(String, nullable=True)
     link_whatsapp: Mapped[str | None] = mapped_column(String, nullable=True)
     manager_id: Mapped[str | None] = mapped_column(String, ForeignKey("users.id"), unique=True, nullable=True)
+    show_on_landing: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 

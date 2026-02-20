@@ -18,8 +18,24 @@ async def create_tables():
     print("All tables created successfully.")
 
 
+async def run_migrations():
+    """Add new columns to existing tables if they don't exist."""
+    from sqlalchemy import text
+    migrations = [
+        "ALTER TABLE service_centers ADD COLUMN IF NOT EXISTS show_on_landing BOOLEAN DEFAULT true",
+    ]
+    async with engine.begin() as conn:
+        for sql in migrations:
+            try:
+                await conn.execute(text(sql))
+            except Exception as e:
+                print(f"Migration skipped: {e}")
+    print("Migrations applied.")
+
+
 async def main():
     await create_tables()
+    await run_migrations()
     await engine.dispose()
 
 

@@ -8,7 +8,7 @@ from app.config import settings as app_settings
 from app.routers import (
     auth, users, cars, car_catalog, services, service_centers, visits,
     warranties, warranty_managers, settlements, banners, dashboard,
-    settings as settings_router, events, seed,
+    settings as settings_router, events, seed, landing,
 )
 
 
@@ -47,6 +47,7 @@ app.include_router(dashboard.router)
 app.include_router(settings_router.router)
 app.include_router(events.router)
 app.include_router(seed.router)
+app.include_router(landing.router)
 
 
 @app.get("/api/health")

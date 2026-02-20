@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Users, Building2, Receipt, Image, Shield, UserCheck, LogOut, Wrench, ShoppingCart, Droplets, HandCoins } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Receipt, Image, Shield, UserCheck, LogOut, Wrench, ShoppingCart, Droplets, HandCoins, Globe } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Дашборд", icon: LayoutDashboard },
@@ -16,6 +16,7 @@ const navItems = [
   { href: "/admin/banners", label: "Баннеры", icon: Image },
   { href: "/admin/warranties", label: "Гарантии", icon: Shield },
   { href: "/admin/warranty-managers", label: "Менеджеры гарантий", icon: UserCheck },
+  { href: "/admin/landing", label: "Лендинг", icon: Globe },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
