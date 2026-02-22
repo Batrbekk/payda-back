@@ -66,13 +66,13 @@ const FEATURES = [
     icon: <ShieldCheck className="w-6 h-6 text-[#4F56D3]" />,
     iconBg: "#EEF0FC",
     title: "Надёжная защита",
-    desc: "Полное КАСКО покрытие через проверенных страховых партнёров",
+    desc: "Гарантийное обслуживание через проверенных партнёров по всему Казахстану",
   },
   {
     icon: <Coins className="w-6 h-6 text-[#E27109]" />,
     iconBg: "#FDE5CE",
-    title: "Кешбэк 500₸ от Payda",
-    desc: "Наш партнёр Payda начисляет 500₸ за каждое обслуживание",
+    title: "Кешбэк от Payda",
+    desc: "Наш партнёр Payda начисляет кешбэк за каждое обслуживание",
   },
   {
     icon: <Globe className="w-6 h-6 text-[#4F56D3]" />,
@@ -84,20 +84,20 @@ const FEATURES = [
     icon: <Smartphone className="w-6 h-6 text-[#4F56D3]" />,
     iconBg: "#EEF0FC",
     title: "Приложение Payda",
-    desc: "QR-код, история обслуживания и кешбэк — всё в приложении Payda",
+    desc: "QR-код, история обслуживания, кешбэк и гарантия — всё в одном приложении",
   },
 ];
 
 const STEPS = [
-  { num: "1", title: "Свяжитесь с менеджером", desc: "Оставьте заявку на сайте или позвоните — мы назначим первичный осмотр вашего автомобиля", color: "#4F56D3" },
+  { num: "1", title: "Свяжитесь с менеджером", desc: "Позвоните по номеру +7 707 229 24 41 или оставьте заявку на сайте — мы назначим первичный осмотр вашего автомобиля", color: "#4F56D3" },
   { num: "2", title: "Пройдите осмотр", desc: "После осмотра и подтверждения состояния авто ваша гарантия активируется в приложении Payda", color: "#4F56D3" },
-  { num: "3", title: "Обслуживайтесь с выгодой", desc: "Посещайте партнёрские СЦ, показывайте QR-код и получайте кешбэк 500₸ за каждый визит", color: "#E27109" },
+  { num: "3", title: "Обслуживайтесь с выгодой", desc: "Посещайте партнёрские СЦ, показывайте QR-код и получайте кешбэк за каждый визит", color: "#E27109" },
 ];
 
 const STATS = [
-  { value: 50, suffix: "+", label: "Сервисных центров", color: "#FFFFFF" },
+  { value: 150, suffix: "+", label: "Сервисных центров", color: "#FFFFFF" },
   { value: 10, suffix: "+", label: "Городов Казахстана", color: "#FFFFFF" },
-  { value: 500, suffix: "₸", label: "Кешбэк за визит", color: "#E27109" },
+  { value: 24, suffix: "/7", label: "Поддержка клиентов", color: "#E27109" },
 ];
 
 const AVATAR_COLORS = ["#4F56D3", "#E27109", "#005D4A", "#CA1F1F", "#1976D2", "#7B1FA2"];
@@ -319,7 +319,7 @@ export default function Home() {
             transition={{ delay: 0.35, duration: 0.7 }}
             className="text-3xl md:text-5xl lg:text-[56px] font-bold text-white leading-[1.1] max-w-[800px]"
           >
-            Автострахование{"\n"}с выгодой от Payda.
+            Гарантийное сервисное{"\n"}обслуживание с выгодой от Payda.
           </motion.h1>
 
           {/* Subtitle */}
@@ -329,8 +329,8 @@ export default function Home() {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="text-[#8592AD] text-base lg:text-lg leading-relaxed max-w-[700px]"
           >
-            Оформляйте КАСКО через наши партнёрские сервисные центры по всему Казахстану.
-            С приложением Payda получайте 500₸ кешбэк за каждое обслуживание.
+            Оформляйте гарантию на автомобиль через наши партнёрские сервисные центры по всему Казахстану.
+            С приложением Payda получайте кешбэк за каждое обслуживание.
           </motion.p>
 
           {/* CTA */}
@@ -559,7 +559,7 @@ export default function Home() {
             </a>
           </motion.div>
           <motion.p variants={fadeUp} custom={3} className="text-[#9BA8EC] text-sm">
-            Бесплатно для автовладельцев · Кешбэк от Payda · Поддержка 24/7
+            Бесплатно для автовладельцев · Кешбэк за каждый визит · Поддержка 24/7
           </motion.p>
         </div>
       </Section>
@@ -573,7 +573,7 @@ export default function Home() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-land.svg" alt="casco.kz" className="h-8 self-start" />
               <p className="text-[13px] text-[#8592AD] leading-relaxed">
-                Автострахование нового поколения с кешбэком для владельцев.
+                Гарантийное сервисное обслуживание с кешбэком для автовладельцев.
               </p>
               <div className="flex flex-col gap-3 mt-2">
                 <a href="mailto:paydacasco@gmail.com" className="flex items-center gap-2 text-sm text-[#8592AD] hover:text-white transition-colors">
