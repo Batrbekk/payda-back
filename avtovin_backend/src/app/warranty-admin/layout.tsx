@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Shield, PlusCircle, LogOut, Menu, X } from "lucide-react";
+import { Toaster } from "@/components/ui/sonner";
 
 const navItems = [
   { href: "/warranty-admin", label: "Гарантии", icon: Shield },
@@ -100,6 +101,7 @@ export default function WarrantyAdminLayout({ children }: { children: React.Reac
         </header>
         <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
+      <Toaster richColors position="top-right" theme="light" />
     </div>
   );
 }

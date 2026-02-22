@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 interface CatalogBrand {
   id: string;
@@ -28,6 +29,39 @@ interface UploadedFile {
   filename: string;
   url: string;
   originalName: string;
+}
+
+function formatPhoneInput(value: string): string {
+  // Strip everything except digits
+  const digits = value.replace(/\D/g, "");
+  // Remove leading 7 or 8 if user types full number
+  const clean = digits.startsWith("7") ? digits.slice(1) : digits.startsWith("8") ? digits.slice(1) : digits;
+  // Limit to 10 digits
+  const limited = clean.slice(0, 10);
+  // Format: +7 (XXX) XXX-XX-XX
+  let result = "+7";
+  if (limited.length > 0) result += ` (${limited.slice(0, 3)}`;
+  if (limited.length >= 3) result += `)`;
+  if (limited.length > 3) result += ` ${limited.slice(3, 6)}`;
+  if (limited.length > 6) result += `-${limited.slice(6, 8)}`;
+  if (limited.length > 8) result += `-${limited.slice(8, 10)}`;
+  return result;
+}
+
+function phoneToRaw(formatted: string): string {
+  // Extract +7XXXXXXXXXX from formatted string
+  const digits = formatted.replace(/\D/g, "");
+  if (digits.length >= 11) return `+${digits.slice(0, 11)}`;
+  if (digits.length > 1) return `+${digits}`;
+  return "";
+}
+
+function formatVinInput(value: string): string {
+  // VIN: 17 alphanumeric characters, uppercase, no I, O, Q
+  return value
+    .toUpperCase()
+    .replace(/[^A-HJ-NPR-Z0-9]/g, "")
+    .slice(0, 17);
 }
 
 function getToken(): string {
@@ -226,8 +260,9 @@ export default function CreateWarrantyPage() {
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: currentYear - 1990 + 1 }, (_, i) => currentYear - i);
 
+  const phoneDigits = phone.replace(/\D/g, "");
   const isFormValid =
-    contractNumber && phone && clientName && brandName && modelName && year && vin && accepted;
+    contractNumber && phoneDigits.length === 11 && clientName && brandName && modelName && year && vin.length === 17 && accepted;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -279,7 +314,7 @@ export default function CreateWarrantyPage() {
       const docUrls = uploadedFiles.map((f) => f.url).join(",");
       const payload = {
         contractNumber,
-        phone,
+        phone: phoneToRaw(phone),
         clientName,
         vin,
         brand: brandName,
@@ -304,9 +339,14 @@ export default function CreateWarrantyPage() {
       if (!res.ok) throw new Error(data.detail || data.error);
 
       setSuccess(true);
+      toast.success("Гарантия успешно создана!", {
+        description: `${brandName} ${modelName} — ${clientName}`,
+      });
       setTimeout(() => router.push("/warranty-admin"), 1500);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ошибка при создании");
+      const msg = e instanceof Error ? e.message : "Ошибка при создании";
+      setError(msg);
+      toast.error("Ошибка", { description: msg });
     } finally {
       setSaving(false);
     }
@@ -365,10 +405,10 @@ export default function CreateWarrantyPage() {
               Телефон клиента *
             </label>
             <input
-              type="text"
+              type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+77001234567"
+              onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
+              placeholder="+7 (700) 123-45-67"
               className={inputClass}
               required
             />
@@ -433,14 +473,17 @@ export default function CreateWarrantyPage() {
               </ShadSelect>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">VIN *</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                VIN * <span className="text-gray-400 font-normal">({vin.length}/17)</span>
+              </label>
               <input
                 type="text"
                 value={vin}
-                onChange={(e) => setVin(e.target.value.toUpperCase())}
-                placeholder="WBAXXXXXX..."
-                className={inputClass}
+                onChange={(e) => setVin(formatVinInput(e.target.value))}
+                placeholder="WBAPH5C55BA123456"
+                className={`${inputClass} font-mono tracking-wider`}
                 required
+                maxLength={17}
               />
             </div>
           </div>
