@@ -151,7 +151,7 @@ async def create_warranty(
     async def _send_tg():
         try:
             from app.services.telegram_service import (
-                send_telegram, send_telegram_document, format_warranty_message,
+                send_telegram, send_telegram_documents, format_warranty_message,
             )
             msg = format_warranty_message(
                 contract_number=body.contract_number,
@@ -167,8 +167,9 @@ async def create_warranty(
             )
             await send_telegram(msg)
 
-            # Send attached documents
+            # Send all attached documents in one message
             if body.doc_urls:
+                file_paths = []
                 for url in body.doc_urls.split(","):
                     url = url.strip()
                     if not url:
@@ -176,8 +177,10 @@ async def create_warranty(
                     filename = url.split("/")[-1]
                     filepath = os.path.join(UPLOAD_DIR, filename)
                     if os.path.exists(filepath):
-                        caption = f"📎 {body.contract_number} — {body.client_name}"
-                        await send_telegram_document(filepath, caption)
+                        file_paths.append(filepath)
+                if file_paths:
+                    caption = f"📎 {body.contract_number} — {body.client_name}"
+                    await send_telegram_documents(file_paths, caption)
         except Exception:
             pass
 
@@ -272,19 +275,22 @@ async def send_warranty_docs_to_telegram(
     if not warranty.doc_urls:
         return {"message": "Нет прикреплённых документов"}
 
-    from app.services.telegram_service import send_telegram_document
+    from app.services.telegram_service import send_telegram_documents
     urls = [u.strip() for u in warranty.doc_urls.split(",") if u.strip()]
-    sent = 0
+    file_paths = []
     for url in urls:
         filename = url.split("/")[-1]
         filepath = os.path.join(UPLOAD_DIR, filename)
         if os.path.exists(filepath):
-            caption = f"📎 {warranty.contract_number} — {warranty.client_name}"
-            ok = await send_telegram_document(filepath, caption)
-            if ok:
-                sent += 1
+            file_paths.append(filepath)
 
-    return {"message": f"Отправлено {sent}/{len(urls)} документов"}
+    if not file_paths:
+        return {"message": "Файлы не найдены на сервере"}
+
+    caption = f"📎 {warranty.contract_number} — {warranty.client_name}"
+    ok = await send_telegram_documents(file_paths, caption)
+
+    return {"message": f"Отправлено {len(file_paths)}/{len(urls)} документов" if ok else "Ошибка отправки"}
 
 
 @router.get("/search-users", response_model=list[SearchUserOut])

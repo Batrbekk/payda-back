@@ -1,3 +1,4 @@
+import json
 import httpx
 
 from app.config import settings
@@ -21,20 +22,53 @@ async def send_telegram(text: str) -> bool:
         return False
 
 
-async def send_telegram_document(file_path: str, caption: str = "") -> bool:
-    """Send a document/photo file to the Telegram group chat."""
+async def send_telegram_documents(file_paths: list[str], caption: str = "") -> bool:
+    """Send multiple documents in a single Telegram message using sendMediaGroup."""
     if not settings.telegram_bot_token or not settings.telegram_chat_id:
         return False
+    if not file_paths:
+        return False
 
-    url = f"https://api.telegram.org/bot{settings.telegram_bot_token}/sendDocument"
+    # Single file — use sendDocument for simplicity
+    if len(file_paths) == 1:
+        url = f"https://api.telegram.org/bot{settings.telegram_bot_token}/sendDocument"
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                with open(file_paths[0], "rb") as f:
+                    fname = file_paths[0].split("/")[-1]
+                    resp = await client.post(url, data={
+                        "chat_id": settings.telegram_chat_id,
+                        "caption": caption[:1024] if caption else "",
+                    }, files={"document": (fname, f)})
+                return resp.status_code == 200
+        except Exception:
+            return False
+
+    # Multiple files — sendMediaGroup (up to 10 at a time)
+    url = f"https://api.telegram.org/bot{settings.telegram_bot_token}/sendMediaGroup"
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            with open(file_path, "rb") as f:
-                resp = await client.post(url, data={
-                    "chat_id": settings.telegram_chat_id,
-                    "caption": caption[:1024] if caption else "",
-                }, files={"document": (file_path.split("/")[-1], f)})
-            return resp.status_code == 200
+        media = []
+        files_dict = {}
+        for i, fp in enumerate(file_paths[:10]):
+            attach_key = f"file{i}"
+            fname = fp.split("/")[-1]
+            files_dict[attach_key] = (fname, open(fp, "rb"))
+            item = {"type": "document", "media": f"attach://{attach_key}"}
+            if i == 0 and caption:
+                item["caption"] = caption[:1024]
+            media.append(item)
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(url, data={
+                "chat_id": settings.telegram_chat_id,
+                "media": json.dumps(media),
+            }, files=files_dict)
+
+        # Close all file handles
+        for fh in files_dict.values():
+            fh[1].close()
+
+        return resp.status_code == 200
     except Exception:
         return False
 
