@@ -6,6 +6,8 @@ services:
     environment:
       DATABASE_URL: "postgresql+asyncpg://avtovin:avtovin_secret@postgres:5432/avtovin"
       REDIS_URL: "redis://:redis_secret@redis:6379/0"
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,3 +68,4 @@ services:
 volumes:
   pgdata:
   redisdata:
+  uploads:

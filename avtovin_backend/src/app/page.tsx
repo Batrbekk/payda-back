@@ -501,15 +501,19 @@ export default function Home() {
                 <div className="flex items-center gap-4">
                   {p.logo_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={p.logo_url} alt={p.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
-                  ) : (
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0"
-                      style={{ backgroundColor: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
-                    >
-                      {p.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
-                    </div>
-                  )}
+                    <img
+                      src={p.logo_url}
+                      alt={p.name}
+                      className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-[#CCD0D8]"
+                      onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling?.classList.remove("hidden"); }}
+                    />
+                  ) : null}
+                  <div
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0${p.logo_url ? " hidden" : ""}`}
+                    style={{ backgroundColor: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
+                  >
+                    {p.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
+                  </div>
                   <div className="flex flex-col gap-1 min-w-0">
                     <span className="text-base font-bold text-[#14181F] truncate">{p.name}</span>
                     <span className="text-[13px] text-[#8592AD] truncate">

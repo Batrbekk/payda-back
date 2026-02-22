@@ -1,8 +1,10 @@
+import os
 from contextlib import asynccontextmanager
 
 import redis.asyncio as aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings as app_settings
 from app.routers import (
@@ -48,6 +50,10 @@ app.include_router(settings_router.router)
 app.include_router(events.router)
 app.include_router(seed.router)
 app.include_router(landing.router)
+
+
+os.makedirs("/app/uploads/logos", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
 
 
 @app.get("/api/health")

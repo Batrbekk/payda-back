@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import os
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -131,6 +134,25 @@ async def admin_delete_partner(
     await db.delete(partner)
     await db.commit()
     return {"ok": True}
+
+
+UPLOAD_DIR = "/app/uploads/logos"
+
+
+@router.post("/admin/upload-logo")
+async def upload_logo(
+    file: UploadFile = File(...),
+    admin=Depends(require_admin),
+):
+    """Admin: upload a partner logo, returns the public URL."""
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    ext = os.path.splitext(file.filename or "logo.png")[1] or ".png"
+    filename = f"{uuid.uuid4().hex}{ext}"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    content = await file.read()
+    with open(filepath, "wb") as f:
+        f.write(content)
+    return {"url": f"/uploads/logos/{filename}"}
 
 
 # ── Helpers ──────────────────────────────────────────────

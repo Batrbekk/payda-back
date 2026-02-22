@@ -77,6 +77,7 @@ export default function LandingAdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -167,6 +168,29 @@ export default function LandingAdminPage() {
       await fetchData();
     } catch {
       // ignore
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new window.FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/landing/admin/upload-logo", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getCookie("token")}` },
+        body: fd,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setForm((prev) => ({ ...prev, logo_url: data.url }));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -436,13 +460,37 @@ export default function LandingAdminPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  URL логотипа
+                  Логотип
                 </label>
+                <div className="flex items-center gap-3">
+                  {form.logo_url && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={form.logo_url} alt="Logo" className="w-10 h-10 rounded-lg object-cover border border-gray-200" />
+                  )}
+                  <label className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors">
+                    {uploading ? "Загрузка..." : "Загрузить файл"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  {form.logo_url && (
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, logo_url: "" })}
+                      className="text-xs text-red-500 hover:text-red-700 cursor-pointer"
+                    >
+                      Удалить
+                    </button>
+                  )}
+                </div>
                 <input
                   type="text"
                   value={form.logo_url}
                   onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                  className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
                   placeholder="https://..."
                 />
               </div>
