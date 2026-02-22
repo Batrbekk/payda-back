@@ -14,6 +14,7 @@ import {
 interface CatalogBrand {
   id: string;
   name: string;
+  logoUrl: string | null;
 }
 
 interface CatalogModel {
@@ -54,10 +55,11 @@ function calcEndDate(carYear: number): Date {
   return end;
 }
 
-// Combobox component
+// Combobox component with optional logos
 function Combobox({
   label,
   value,
+  selectedLogo,
   options,
   onChange,
   placeholder,
@@ -65,8 +67,9 @@ function Combobox({
 }: {
   label: string;
   value: string;
-  options: { id: string; name: string }[];
-  onChange: (id: string, name: string) => void;
+  selectedLogo?: string | null;
+  options: { id: string; name: string; logoUrl?: string | null }[];
+  onChange: (id: string, name: string, logoUrl?: string | null) => void;
   placeholder: string;
   disabled?: boolean;
 }) {
@@ -97,13 +100,16 @@ function Combobox({
           disabled ? "bg-gray-100 cursor-not-allowed" : "bg-white"
         }`}
       >
-        <span className={value ? "text-gray-900" : "text-gray-400"}>
+        <span className={`flex items-center gap-2 ${value ? "text-gray-900" : "text-gray-400"}`}>
+          {selectedLogo && (
+            <img src={selectedLogo} alt="" className="w-5 h-5 object-contain" />
+          )}
           {value || placeholder}
         </span>
-        <ChevronDown className="h-4 w-4 text-gray-400" />
+        <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
       </button>
       {open && !disabled && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-hidden">
+        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-hidden">
           <div className="p-2 border-b border-gray-100">
             <input
               type="text"
@@ -114,7 +120,7 @@ function Combobox({
               autoFocus
             />
           </div>
-          <div className="overflow-y-auto max-h-48">
+          <div className="overflow-y-auto max-h-56">
             {filtered.length === 0 ? (
               <div className="px-3 py-2 text-sm text-gray-400">Ничего не найдено</div>
             ) : (
@@ -123,14 +129,17 @@ function Combobox({
                   key={o.id}
                   type="button"
                   onClick={() => {
-                    onChange(o.id, o.name);
+                    onChange(o.id, o.name, o.logoUrl);
                     setOpen(false);
                     setSearch("");
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 ${
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 flex items-center gap-2 ${
                     o.name === value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-gray-700"
                   }`}
                 >
+                  {o.logoUrl && (
+                    <img src={o.logoUrl} alt="" className="w-5 h-5 object-contain shrink-0" />
+                  )}
                   {o.name}
                 </button>
               ))
@@ -152,6 +161,7 @@ export default function CreateWarrantyPage() {
   const [vin, setVin] = useState("");
   const [brandId, setBrandId] = useState("");
   const [brandName, setBrandName] = useState("");
+  const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [modelId, setModelId] = useState("");
   const [modelName, setModelName] = useState("");
   const [year, setYear] = useState("");
@@ -329,11 +339,13 @@ export default function CreateWarrantyPage() {
             <Combobox
               label="Марка"
               value={brandName}
+              selectedLogo={brandLogo}
               options={brands}
               placeholder="Выберите марку"
-              onChange={(id, name) => {
+              onChange={(id, name, logoUrl) => {
                 setBrandId(id);
                 setBrandName(name);
+                setBrandLogo(logoUrl ?? null);
                 setModelId("");
                 setModelName("");
               }}
@@ -346,7 +358,7 @@ export default function CreateWarrantyPage() {
               options={models}
               placeholder={brandId ? "Выберите модель" : "Сначала марку"}
               disabled={!brandId}
-              onChange={(id, name) => {
+              onChange={(id, name, _logo) => {
                 setModelId(id);
                 setModelName(name);
               }}

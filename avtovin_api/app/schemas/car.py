@@ -47,6 +47,7 @@ class VinDecodeOut(CamelModel):
 class BrandOut(CamelModel):
     id: str
     name: str
+    logo_url: str | None = None
 
 
 class ModelOut(CamelModel):

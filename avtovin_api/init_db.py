@@ -23,6 +23,7 @@ async def run_migrations():
     from sqlalchemy import text
     migrations = [
         "ALTER TABLE service_centers ADD COLUMN IF NOT EXISTS show_on_landing BOOLEAN DEFAULT true",
+        "ALTER TABLE car_brands ADD COLUMN IF NOT EXISTS logo_url VARCHAR",
     ]
     async with engine.begin() as conn:
         for sql in migrations:

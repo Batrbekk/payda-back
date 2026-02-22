@@ -11,6 +11,7 @@ class CarBrand(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
     name: Mapped[str] = mapped_column(String, unique=True)
+    logo_url: Mapped[str | None] = mapped_column(String, nullable=True)
 
     models = relationship("CarModel", back_populates="brand", cascade="all, delete-orphan")
 
