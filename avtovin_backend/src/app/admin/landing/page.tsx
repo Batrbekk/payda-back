@@ -55,8 +55,16 @@ const emptyForm: FormData = {
 };
 
 function getCookie(name: string): string {
+  if (typeof document === "undefined") return "";
   const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
   return match ? match[2] : "";
+}
+
+function getAuthHeaders() {
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${getCookie("token")}`,
+  };
 }
 
 export default function LandingAdminPage() {
@@ -70,16 +78,10 @@ export default function LandingAdminPage() {
   const [form, setForm] = useState<FormData>(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  const token = getCookie("token");
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-
   const fetchData = async () => {
     try {
       const [partnersRes, citiesRes] = await Promise.all([
-        fetch("/api/landing/admin/partners", { headers }),
+        fetch("/api/landing/admin/partners", { headers: getAuthHeaders() }),
         fetch("/api/landing/cities"),
       ]);
       if (partnersRes.ok) setPartners(await partnersRes.json());
@@ -125,7 +127,7 @@ export default function LandingAdminPage() {
       const method = editingId ? "PUT" : "POST";
       const res = await fetch(url, {
         method,
-        headers,
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           ...form,
           services: form.services || null,
@@ -147,7 +149,7 @@ export default function LandingAdminPage() {
     try {
       await fetch(`/api/landing/admin/partners/${id}`, {
         method: "DELETE",
-        headers,
+        headers: getAuthHeaders(),
       });
       await fetchData();
     } catch {
@@ -159,7 +161,7 @@ export default function LandingAdminPage() {
     try {
       await fetch(`/api/landing/admin/partners/${p.id}`, {
         method: "PUT",
-        headers,
+        headers: getAuthHeaders(),
         body: JSON.stringify({ is_active: !p.is_active }),
       });
       await fetchData();
