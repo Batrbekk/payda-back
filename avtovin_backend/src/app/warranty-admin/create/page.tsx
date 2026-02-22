@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface CatalogBrand {
   id: string;
@@ -523,19 +524,22 @@ export default function CreateWarrantyPage() {
 
         {/* Responsibility disclaimer */}
         <div className="p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="responsibility"
               checked={accepted}
-              onChange={(e) => setAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              onCheckedChange={(checked) => setAccepted(checked === true)}
+              className="mt-0.5"
             />
-            <span className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+            <label
+              htmlFor="responsibility"
+              className="text-xs sm:text-sm text-gray-600 leading-relaxed cursor-pointer"
+            >
               Я подтверждаю, что все указанные данные являются достоверными и корректными.
               За заполненные данные несёт ответственность менеджер, оформляющий гарантию.
               В случае предоставления недостоверных данных, ответственность возлагается на заполняющего менеджера.
-            </span>
-          </label>
+            </label>
+          </div>
         </div>
 
         <button
