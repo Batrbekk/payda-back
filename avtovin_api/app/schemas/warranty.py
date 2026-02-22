@@ -34,8 +34,8 @@ class WarrantyCreate(CamelModel):
     brand: str | None = None
     model: str | None = None
     year: int | None = None
-    start_date: datetime
-    end_date: datetime
+    start_date: datetime | None = None
+    end_date: datetime | None = None
     plate_number: str | None = None
     user_id: str | None = None
     car_id: str | None = None

@@ -1,5 +1,7 @@
+import asyncio
 import re
 from datetime import datetime, timezone
+from dateutil.relativedelta import relativedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, or_, and_
@@ -66,8 +68,22 @@ async def create_warranty(
     current_user: User = Depends(require_warranty_manager),
     db: AsyncSession = Depends(get_db),
 ):
-    if not body.contract_number or not body.client_name or not body.start_date or not body.end_date:
+    if not body.contract_number or not body.client_name:
         raise HTTPException(status_code=400, detail="Заполните все обязательные поля")
+
+    # Auto-calculate dates if not provided
+    now = datetime.utcnow()
+    start_date = body.start_date or now
+    if body.end_date:
+        end_date = body.end_date
+    elif body.year:
+        # БУ (older than 2 years) → 1 month, new → 5 years
+        if now.year - body.year >= 2:
+            end_date = start_date + relativedelta(months=1)
+        else:
+            end_date = start_date + relativedelta(years=5)
+    else:
+        end_date = start_date + relativedelta(years=5)
 
     # Check unique contract number
     result = await db.execute(select(Warranty).where(Warranty.contract_number == body.contract_number))
@@ -114,13 +130,33 @@ async def create_warranty(
         brand=body.brand or "",
         model=body.model or "",
         year=body.year or 0,
-        start_date=body.start_date,
-        end_date=body.end_date,
+        start_date=start_date,
+        end_date=end_date,
         created_by_id=current_user.id,
     )
     db.add(warranty)
     await db.commit()
     await db.refresh(warranty)
+
+    # Fire-and-forget Telegram notification
+    try:
+        from app.services.telegram_service import send_telegram, format_warranty_message
+        msg = format_warranty_message(
+            contract_number=body.contract_number,
+            client_name=body.client_name,
+            phone=body.phone or "",
+            brand=body.brand or "",
+            model=body.model or "",
+            year=body.year or 0,
+            vin=body.vin or "",
+            start_date=start_date.strftime("%d.%m.%Y"),
+            end_date=end_date.strftime("%d.%m.%Y"),
+            manager_name=current_user.name,
+        )
+        asyncio.create_task(send_telegram(msg))
+    except Exception:
+        pass  # Don't block warranty creation
+
     return WarrantyOut.model_validate(warranty)
 
 

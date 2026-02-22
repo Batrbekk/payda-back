@@ -1,144 +1,223 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Search, Check, UserPlus, UserSearch } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown } from "lucide-react";
 
-interface Car {
+interface CatalogBrand {
   id: string;
-  vin: string | null;
-  brand: string;
-  model: string;
-  year: number;
-  plateNumber: string;
+  name: string;
 }
 
-interface UserResult {
+interface CatalogModel {
   id: string;
-  phone: string;
-  name: string | null;
-  cars: Car[];
+  name: string;
+  brandId: string;
 }
 
 function getToken(): string {
+  if (typeof document === "undefined") return "";
   const match = document.cookie.match(/warranty_token=([^;]+)/);
   return match ? match[1] : "";
 }
 
+function formatDate(date: Date): string {
+  const d = date.getDate().toString().padStart(2, "0");
+  const m = (date.getMonth() + 1).toString().padStart(2, "0");
+  const y = date.getFullYear();
+  return `${d}.${m}.${y}`;
+}
+
+function toISODate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+function calcEndDate(carYear: number): Date {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  if (currentYear - carYear >= 2) {
+    // БУ — 1 месяц
+    const end = new Date(now);
+    end.setMonth(end.getMonth() + 1);
+    return end;
+  }
+  // Новая — 5 лет
+  const end = new Date(now);
+  end.setFullYear(end.getFullYear() + 5);
+  return end;
+}
+
+// Combobox component
+function Combobox({
+  label,
+  value,
+  options,
+  onChange,
+  placeholder,
+  disabled,
+}: {
+  label: string;
+  value: string;
+  options: { id: string; name: string }[];
+  onChange: (id: string, name: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filtered = options.filter((o) =>
+    o.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div ref={ref} className="relative">
+      <label className="block text-xs font-medium text-gray-600 mb-1">{label} *</label>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen(!open)}
+        className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none ${
+          disabled ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+        }`}
+      >
+        <span className={value ? "text-gray-900" : "text-gray-400"}>
+          {value || placeholder}
+        </span>
+        <ChevronDown className="h-4 w-4 text-gray-400" />
+      </button>
+      {open && !disabled && (
+        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-hidden">
+          <div className="p-2 border-b border-gray-100">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Поиск..."
+              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500"
+              autoFocus
+            />
+          </div>
+          <div className="overflow-y-auto max-h-48">
+            {filtered.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-gray-400">Ничего не найдено</div>
+            ) : (
+              filtered.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => {
+                    onChange(o.id, o.name);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 ${
+                    o.name === value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-gray-700"
+                  }`}
+                >
+                  {o.name}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CreateWarrantyPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"new" | "existing">("new");
-
-  // Existing client search
-  const [phoneSearch, setPhoneSearch] = useState("");
-  const [users, setUsers] = useState<UserResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserResult | null>(null);
-  const [selectedCar, setSelectedCar] = useState<Car | null>(null);
 
   // Form fields
   const [contractNumber, setContractNumber] = useState("");
   const [phone, setPhone] = useState("");
   const [clientName, setClientName] = useState("");
   const [vin, setVin] = useState("");
-  const [brand, setBrand] = useState("");
-  const [model, setModel] = useState("");
+  const [brandId, setBrandId] = useState("");
+  const [brandName, setBrandName] = useState("");
+  const [modelId, setModelId] = useState("");
+  const [modelName, setModelName] = useState("");
   const [year, setYear] = useState("");
-  const [plateNumber, setPlateNumber] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+
+  // Catalog data
+  const [brands, setBrands] = useState<CatalogBrand[]>([]);
+  const [models, setModels] = useState<CatalogModel[]>([]);
+
+  // Dates (auto-calculated)
+  const today = new Date();
+  const startDateStr = formatDate(today);
+  const endDate = year ? calcEndDate(parseInt(year)) : null;
+  const endDateStr = endDate ? formatDate(endDate) : "—";
+  const warrantyType = year
+    ? today.getFullYear() - parseInt(year) >= 2
+      ? "БУ (1 месяц)"
+      : "Новая (5 лет)"
+    : "";
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const switchMode = (newMode: "new" | "existing") => {
-    setMode(newMode);
-    setSelectedUser(null);
-    setSelectedCar(null);
-    setUsers([]);
-    setPhoneSearch("");
-    setPhone("");
-    setClientName("");
-    setVin("");
-    setBrand("");
-    setModel("");
-    setYear("");
-    setPlateNumber("");
-    setError("");
-  };
+  // Load brands on mount
+  useEffect(() => {
+    fetch("/api/car-catalog/brands", {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setBrands(data))
+      .catch(() => {});
+  }, []);
 
-  const searchUsers = async () => {
-    if (phoneSearch.length < 3) return;
-    setSearching(true);
-    try {
-      const res = await fetch(`/api/warranties/search-users?phone=${encodeURIComponent(phoneSearch)}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const data = await res.json();
-      setUsers(data);
-    } catch {
-      console.error("Search failed");
-    } finally {
-      setSearching(false);
+  // Load models when brand changes
+  useEffect(() => {
+    if (!brandId) {
+      setModels([]);
+      return;
     }
-  };
+    fetch(`/api/car-catalog/models?brandId=${brandId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setModels(data))
+      .catch(() => {});
+  }, [brandId]);
 
-  const selectUser = (user: UserResult) => {
-    setSelectedUser(user);
-    setClientName(user.name || "");
-    setUsers([]);
-    setSelectedCar(null);
-    setVin("");
-    setBrand("");
-    setModel("");
-    setYear("");
-    setPlateNumber("");
-  };
+  // Year options: current year down to 1990
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 1990 + 1 }, (_, i) => currentYear - i);
 
-  const selectCar = (car: Car) => {
-    setSelectedCar(car);
-    setVin(car.vin || "");
-    setBrand(car.brand);
-    setModel(car.model);
-    setYear(String(car.year));
-    setPlateNumber(car.plateNumber);
-  };
+  const isFormValid =
+    contractNumber && phone && clientName && brandName && modelName && year && vin;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (mode === "existing" && (!selectedUser || !selectedCar)) {
-      setError("Выберите пользователя и автомобиль");
-      return;
-    }
-
-    if (mode === "new" && (!phone || !brand || !model || !year || !plateNumber)) {
-      setError("Заполните телефон и данные автомобиля");
-      return;
-    }
+    if (!isFormValid) return;
 
     setSaving(true);
     setError("");
     try {
-      const payload: Record<string, unknown> = {
+      const payload = {
         contractNumber,
+        phone,
         clientName,
         vin,
-        brand,
-        model,
-        year,
-        startDate,
-        endDate,
+        brand: brandName,
+        model: modelName,
+        year: parseInt(year),
+        plateNumber: contractNumber, // ГРНЗ = номер договора
+        startDate: toISODate(today),
+        endDate: endDate ? toISODate(endDate) : undefined,
       };
-
-      if (mode === "existing") {
-        payload.userId = selectedUser!.id;
-        payload.carId = selectedCar!.id;
-      } else {
-        payload.phone = phone;
-        payload.plateNumber = plateNumber;
-      }
 
       const res = await fetch("/api/warranties", {
         method: "POST",
@@ -161,11 +240,8 @@ export default function CreateWarrantyPage() {
     }
   };
 
-  const isFormValid = mode === "new"
-    ? contractNumber && phone && clientName && brand && model && year && plateNumber && startDate && endDate
-    : contractNumber && selectedUser && selectedCar && clientName && startDate && endDate;
-
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none";
+  const inputClass =
+    "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none";
 
   return (
     <div className="max-w-2xl">
@@ -192,205 +268,149 @@ export default function CreateWarrantyPage() {
         </div>
       )}
 
-      {/* Mode toggle */}
-      <div className="flex gap-2 mb-6">
-        <button
-          type="button"
-          onClick={() => switchMode("new")}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium border transition-colors ${
-            mode === "new"
-              ? "bg-emerald-50 border-emerald-500 text-emerald-700"
-              : "border-gray-200 text-gray-600 hover:bg-gray-50"
-          }`}
-        >
-          <UserPlus className="h-4 w-4" />
-          Новый клиент
-        </button>
-        <button
-          type="button"
-          onClick={() => switchMode("existing")}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium border transition-colors ${
-            mode === "existing"
-              ? "bg-emerald-50 border-emerald-500 text-emerald-700"
-              : "border-gray-200 text-gray-600 hover:bg-gray-50"
-          }`}
-        >
-          <UserSearch className="h-4 w-4" />
-          Существующий клиент
-        </button>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Contract Number */}
+        {/* ГРНЗ / Номер договора */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Номер договора *</label>
-          <input type="text" value={contractNumber} onChange={(e) => setContractNumber(e.target.value)}
-            placeholder="ГД-001-2026" className={inputClass} required />
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            ГРНЗ / Номер договора *
+          </label>
+          <input
+            type="text"
+            value={contractNumber}
+            onChange={(e) => setContractNumber(e.target.value)}
+            placeholder="123ABC02"
+            className={inputClass}
+            required
+          />
         </div>
 
-        {mode === "new" ? (
-          <>
-            {/* New client: phone + name */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Телефон клиента *</label>
-                <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+77001234567" className={inputClass} required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ФИО клиента *</label>
-                <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Иванов Иван" className={inputClass} required />
-              </div>
-            </div>
-
-            {/* Car details */}
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-3">Данные автомобиля</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Марка *</label>
-                  <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)}
-                    placeholder="BMW" className={inputClass} required />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Модель *</label>
-                  <input type="text" value={model} onChange={(e) => setModel(e.target.value)}
-                    placeholder="X5" className={inputClass} required />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Год *</label>
-                  <input type="number" value={year} onChange={(e) => setYear(e.target.value)}
-                    placeholder="2024" className={inputClass} required />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Гос. номер *</label>
-                  <input type="text" value={plateNumber} onChange={(e) => setPlateNumber(e.target.value)}
-                    placeholder="123ABC02" className={inputClass} required />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">VIN</label>
-                  <input type="text" value={vin} onChange={(e) => setVin(e.target.value)}
-                    placeholder="WBAXXXXXX..." className={inputClass} />
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Existing client: search */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Пользователь *</label>
-              {selectedUser ? (
-                <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                  <div>
-                    <span className="font-medium text-gray-900">{selectedUser.name || "Без имени"}</span>
-                    <span className="text-gray-500 ml-2">{selectedUser.phone}</span>
-                  </div>
-                  <button type="button" onClick={() => { setSelectedUser(null); setSelectedCar(null); setClientName(""); }}
-                    className="text-sm text-red-600 hover:text-red-700">Изменить</button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <input type="text" value={phoneSearch} onChange={(e) => setPhoneSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), searchUsers())}
-                        placeholder="Поиск по номеру телефона..." className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
-                    </div>
-                    <button type="button" onClick={searchUsers} disabled={searching || phoneSearch.length < 3}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 disabled:opacity-50">
-                      {searching ? "..." : "Найти"}
-                    </button>
-                  </div>
-                  {users.length > 0 && (
-                    <div className="border border-gray-200 rounded-lg divide-y divide-gray-100">
-                      {users.map((u) => (
-                        <button key={u.id} type="button" onClick={() => selectUser(u)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm">
-                          <span className="font-medium">{u.name || "Без имени"}</span>
-                          <span className="text-gray-500 ml-2">{u.phone}</span>
-                          <span className="text-gray-400 ml-2">({u.cars.length} авто)</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Car Selection */}
-            {selectedUser && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Автомобиль *</label>
-                {selectedUser.cars.length === 0 ? (
-                  <p className="text-sm text-gray-500">У пользователя нет автомобилей</p>
-                ) : (
-                  <div className="grid gap-2">
-                    {selectedUser.cars.map((car) => (
-                      <button key={car.id} type="button" onClick={() => selectCar(car)}
-                        className={`text-left p-3 rounded-lg border text-sm transition-colors ${
-                          selectedCar?.id === car.id ? "border-emerald-500 bg-emerald-50" : "border-gray-200 hover:bg-gray-50"
-                        }`}>
-                        <div className="font-medium text-gray-900">{car.brand} {car.model} {car.year}</div>
-                        <div className="text-gray-500 text-xs mt-0.5">
-                          {car.plateNumber} {car.vin ? `| VIN: ${car.vin}` : ""}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Client Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ФИО клиента *</label>
-              <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)}
-                placeholder="Иванов Иван Иванович" className={inputClass} required />
-            </div>
-
-            {/* Auto-filled car details (read-only context) */}
-            {selectedCar && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">VIN</label>
-                  <input type="text" value={vin} onChange={(e) => setVin(e.target.value)} className={inputClass} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Марка</label>
-                  <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} className={inputClass} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Модель</label>
-                  <input type="text" value={model} onChange={(e) => setModel(e.target.value)} className={inputClass} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Год</label>
-                  <input type="number" value={year} onChange={(e) => setYear(e.target.value)} className={inputClass} />
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Dates */}
+        {/* Phone + Name */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Дата начала *</label>
-            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-              className={inputClass} required />
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Телефон клиента *
+            </label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+77001234567"
+              className={inputClass}
+              required
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Дата окончания *</label>
-            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
-              className={inputClass} required />
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              ФИО клиента *
+            </label>
+            <input
+              type="text"
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+              placeholder="Иванов Иван"
+              className={inputClass}
+              required
+            />
           </div>
         </div>
 
-        <button type="submit" disabled={saving || !isFormValid}
-          className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed">
+        {/* Car details */}
+        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <p className="text-sm font-medium text-gray-700 mb-3">Данные автомобиля</p>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Brand combobox */}
+            <Combobox
+              label="Марка"
+              value={brandName}
+              options={brands}
+              placeholder="Выберите марку"
+              onChange={(id, name) => {
+                setBrandId(id);
+                setBrandName(name);
+                setModelId("");
+                setModelName("");
+              }}
+            />
+
+            {/* Model combobox */}
+            <Combobox
+              label="Модель"
+              value={modelName}
+              options={models}
+              placeholder={brandId ? "Выберите модель" : "Сначала марку"}
+              disabled={!brandId}
+              onChange={(id, name) => {
+                setModelId(id);
+                setModelName(name);
+              }}
+            />
+
+            {/* Year select */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Год *</label>
+              <select
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                className={`${inputClass} appearance-none`}
+                required
+              >
+                <option value="">Выберите год</option>
+                {yearOptions.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* VIN */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">VIN *</label>
+              <input
+                type="text"
+                value={vin}
+                onChange={(e) => setVin(e.target.value.toUpperCase())}
+                placeholder="WBAXXXXXX..."
+                className={inputClass}
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Dates (auto-calculated, readonly) */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm font-medium text-gray-700 mb-3">Срок гарантии</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Дата начала
+              </label>
+              <div className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900">
+                {startDateStr}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Дата окончания
+              </label>
+              <div className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900">
+                {endDateStr}
+              </div>
+            </div>
+          </div>
+          {warrantyType && (
+            <p className="mt-2 text-xs text-blue-600">
+              Тип: {warrantyType}
+            </p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={saving || !isFormValid}
+          className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           {saving ? "Сохранение..." : "Создать гарантию"}
         </button>
       </form>

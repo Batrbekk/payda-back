@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     smsc_login: str = "batrbekk"
     smsc_password: str = "Batrbekk031198"
     firebase_credentials_path: str = ""
+    telegram_bot_token: str = ""
+    telegram_chat_id: str = ""
     debug: bool = True
 
     class Config:
