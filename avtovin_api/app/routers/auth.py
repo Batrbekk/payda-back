@@ -36,7 +36,8 @@ async def send_code(body: SendCodeRequest, db: AsyncSession = Depends(get_db)):
         if result.scalar_one_or_none():
             is_test = True
 
-    code = "0000" if is_test else generate_otp()
+    # TODO: временно 0000 для всех — убрать после тестирования
+    code = "0000"
 
     # Save OTP
     otp = OtpCode(
@@ -47,11 +48,11 @@ async def send_code(body: SendCodeRequest, db: AsyncSession = Depends(get_db)):
     db.add(otp)
     await db.commit()
 
-    # Send SMS (skip for test accounts)
-    if not is_test:
-        success = await send_sms(phone, code)
-        if not success:
-            raise HTTPException(status_code=502, detail="Не удалось отправить SMS. Попробуйте позже")
+    # Send SMS — отключено на время тестирования
+    # if not is_test:
+    #     success = await send_sms(phone, code)
+    #     if not success:
+    #         raise HTTPException(status_code=502, detail="Не удалось отправить SMS. Попробуйте позже")
 
     return SendCodeResponse(message="Код отправлен", expires_in=300)
 
