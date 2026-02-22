@@ -11,6 +11,7 @@ from app.models.warranty import Warranty
 from app.models.app_settings import AppSettings
 from app.models.balance import BalanceTransaction
 from app.models.settlement import Settlement
+from app.models.landing_partner import LandingPartner
 
 __all__ = [
     "Base",
@@ -20,5 +21,5 @@ __all__ = [
     "ServiceCenter", "ServiceCenterAddress", "ServiceCenterService",
     "Visit", "VisitService",
     "OtpCode", "Banner", "Warranty", "AppSettings",
-    "BalanceTransaction", "Settlement",
+    "BalanceTransaction", "Settlement", "LandingPartner",
 ]

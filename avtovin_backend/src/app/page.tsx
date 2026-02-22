@@ -21,11 +21,10 @@ import {
 interface Partner {
   id: string;
   name: string;
-  type: string;
   city: string;
-  rating: number;
+  address: string | null;
+  phone: string | null;
   logo_url: string | null;
-  addresses: string[];
   services: string[];
 }
 
@@ -509,7 +508,7 @@ export default function Home() {
                   <div className="flex flex-col gap-1 min-w-0">
                     <span className="text-base font-bold text-[#14181F] truncate">{p.name}</span>
                     <span className="text-[13px] text-[#8592AD] truncate">
-                      {p.addresses[0] || p.city}
+                      {p.address || p.city}
                     </span>
                   </div>
                 </div>

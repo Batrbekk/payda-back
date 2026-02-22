@@ -1,24 +1,49 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.service_center import ServiceCenter, ServiceCenterAddress, ServiceCenterService
-from app.models.service import Service
+from app.models.landing_partner import LandingPartner
 from app.dependencies import require_admin
 
 router = APIRouter(prefix="/api/landing", tags=["landing"])
 
 
+# ── Schemas ──────────────────────────────────────────────
+
+class PartnerCreate(BaseModel):
+    name: str
+    city: str
+    address: str | None = None
+    phone: str | None = None
+    logo_url: str | None = None
+    services: str | None = None
+    sort_order: int = 0
+    is_active: bool = True
+
+
+class PartnerUpdate(BaseModel):
+    name: str | None = None
+    city: str | None = None
+    address: str | None = None
+    phone: str | None = None
+    logo_url: str | None = None
+    services: str | None = None
+    sort_order: int | None = None
+    is_active: bool | None = None
+
+
+# ── Public endpoints (no auth) ───────────────────────────
+
 @router.get("/cities")
 async def get_landing_cities(db: AsyncSession = Depends(get_db)):
-    """Public: get unique cities from active service centers shown on landing."""
+    """Public: get unique cities from active landing partners."""
     result = await db.execute(
-        select(ServiceCenter.city, func.count(ServiceCenter.id).label("count"))
-        .where(ServiceCenter.is_active == True, ServiceCenter.show_on_landing == True)
-        .group_by(ServiceCenter.city)
-        .order_by(func.count(ServiceCenter.id).desc())
+        select(LandingPartner.city, func.count(LandingPartner.id).label("count"))
+        .where(LandingPartner.is_active == True)  # noqa: E712
+        .group_by(LandingPartner.city)
+        .order_by(LandingPartner.city)
     )
     rows = result.all()
     return [{"name": row.city, "count": row.count} for row in rows]
@@ -29,47 +54,98 @@ async def get_landing_partners(
     city: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Public: get partners for landing page, optionally filtered by city."""
+    """Public: get active partners for landing page, optionally filtered by city."""
     q = (
-        select(ServiceCenter)
-        .where(ServiceCenter.is_active == True, ServiceCenter.show_on_landing == True)
-        .options(
-            selectinload(ServiceCenter.addresses),
-            selectinload(ServiceCenter.services).selectinload(ServiceCenterService.service),
-        )
-        .order_by(ServiceCenter.name)
+        select(LandingPartner)
+        .where(LandingPartner.is_active == True)  # noqa: E712
+        .order_by(LandingPartner.sort_order, LandingPartner.name)
     )
     if city:
-        q = q.where(ServiceCenter.city == city)
+        q = q.where(LandingPartner.city == city)
     result = await db.execute(q)
-    scs = result.scalars().all()
-    return [
-        {
-            "id": sc.id,
-            "name": sc.name,
-            "type": sc.type,
-            "city": sc.city,
-            "rating": sc.rating,
-            "logo_url": sc.logo_url,
-            "addresses": [a.address for a in sc.addresses],
-            "services": [s.service.name for s in sc.services if s.service],
-        }
-        for sc in scs
-    ]
+    partners = result.scalars().all()
+    return [_partner_dict(p) for p in partners]
 
 
-@router.put("/partners/{sc_id}/visibility")
-async def toggle_partner_visibility(
-    sc_id: str,
+# ── Admin CRUD ───────────────────────────────────────────
+
+@router.get("/admin/partners")
+async def admin_list_partners(
     admin=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Admin: toggle show_on_landing for a partner."""
-    result = await db.execute(select(ServiceCenter).where(ServiceCenter.id == sc_id))
-    sc = result.scalar_one_or_none()
-    if not sc:
-        from fastapi import HTTPException
-        raise HTTPException(404, "Partner not found")
-    sc.show_on_landing = not sc.show_on_landing
+    """Admin: list ALL partners (including inactive)."""
+    result = await db.execute(
+        select(LandingPartner).order_by(LandingPartner.city, LandingPartner.sort_order, LandingPartner.name)
+    )
+    partners = result.scalars().all()
+    return [_partner_dict(p) for p in partners]
+
+
+@router.post("/admin/partners")
+async def admin_create_partner(
+    body: PartnerCreate,
+    admin=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin: create a new landing partner."""
+    partner = LandingPartner(**body.model_dump())
+    db.add(partner)
     await db.commit()
-    return {"id": sc.id, "show_on_landing": sc.show_on_landing}
+    await db.refresh(partner)
+    return _partner_dict(partner)
+
+
+@router.put("/admin/partners/{partner_id}")
+async def admin_update_partner(
+    partner_id: str,
+    body: PartnerUpdate,
+    admin=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin: update an existing landing partner."""
+    result = await db.execute(select(LandingPartner).where(LandingPartner.id == partner_id))
+    partner = result.scalar_one_or_none()
+    if not partner:
+        raise HTTPException(404, "Partner not found")
+
+    data = body.model_dump(exclude_unset=True)
+    for key, value in data.items():
+        setattr(partner, key, value)
+    await db.commit()
+    await db.refresh(partner)
+    return _partner_dict(partner)
+
+
+@router.delete("/admin/partners/{partner_id}")
+async def admin_delete_partner(
+    partner_id: str,
+    admin=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin: delete a landing partner."""
+    result = await db.execute(select(LandingPartner).where(LandingPartner.id == partner_id))
+    partner = result.scalar_one_or_none()
+    if not partner:
+        raise HTTPException(404, "Partner not found")
+    await db.delete(partner)
+    await db.commit()
+    return {"ok": True}
+
+
+# ── Helpers ──────────────────────────────────────────────
+
+def _partner_dict(p: LandingPartner) -> dict:
+    return {
+        "id": p.id,
+        "name": p.name,
+        "city": p.city,
+        "address": p.address,
+        "phone": p.phone,
+        "logo_url": p.logo_url,
+        "services": [s.strip() for s in p.services.split(",") if s.strip()] if p.services else [],
+        "sort_order": p.sort_order,
+        "is_active": p.is_active,
+        "created_at": p.created_at.isoformat() if p.created_at else None,
+        "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+    }

@@ -1,20 +1,62 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Globe, Eye, EyeOff, MapPin, Building2, Search } from "lucide-react";
+import {
+  Globe,
+  MapPin,
+  Building2,
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Check,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 interface Partner {
   id: string;
   name: string;
-  type: string;
   city: string;
+  address: string | null;
+  phone: string | null;
+  logo_url: string | null;
+  services: string[];
+  sort_order: number;
   is_active: boolean;
-  show_on_landing: boolean;
 }
 
 interface City {
   name: string;
   count: number;
+}
+
+interface FormData {
+  name: string;
+  city: string;
+  address: string;
+  phone: string;
+  logo_url: string;
+  services: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
+const emptyForm: FormData = {
+  name: "",
+  city: "",
+  address: "",
+  phone: "",
+  logo_url: "",
+  services: "",
+  sort_order: 0,
+  is_active: true,
+};
+
+function getCookie(name: string): string {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? match[2] : "";
 }
 
 export default function LandingAdminPage() {
@@ -23,26 +65,25 @@ export default function LandingAdminPage() {
   const [filterCity, setFilterCity] = useState("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormData>(emptyForm);
+  const [saving, setSaving] = useState(false);
+
+  const token = getCookie("token");
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
 
   const fetchData = async () => {
     try {
       const [partnersRes, citiesRes] = await Promise.all([
-        fetch("/api/service-centers"),
+        fetch("/api/landing/admin/partners", { headers }),
         fetch("/api/landing/cities"),
       ]);
-      const partnersData = await partnersRes.json();
-      const citiesData = await citiesRes.json();
-      setPartners(
-        partnersData.map((p: Record<string, unknown>) => ({
-          id: p.id,
-          name: p.name,
-          type: p.type,
-          city: p.city,
-          is_active: p.isActive ?? p.is_active,
-          show_on_landing: p.showOnLanding ?? p.show_on_landing ?? true,
-        }))
-      );
-      setCities(citiesData);
+      if (partnersRes.ok) setPartners(await partnersRes.json());
+      if (citiesRes.ok) setCities(await citiesRes.json());
     } catch {
       // ignore
     } finally {
@@ -54,18 +95,74 @@ export default function LandingAdminPage() {
     fetchData();
   }, []);
 
-  const toggleVisibility = async (id: string) => {
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setShowModal(true);
+  };
+
+  const openEdit = (p: Partner) => {
+    setEditingId(p.id);
+    setForm({
+      name: p.name,
+      city: p.city,
+      address: p.address || "",
+      phone: p.phone || "",
+      logo_url: p.logo_url || "",
+      services: p.services.join(", "),
+      sort_order: p.sort_order,
+      is_active: p.is_active,
+    });
+    setShowModal(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      const res = await fetch(`/api/landing/partners/${id}/visibility`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${getCookie("token")}` },
+      const url = editingId
+        ? `/api/landing/admin/partners/${editingId}`
+        : "/api/landing/admin/partners";
+      const method = editingId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: JSON.stringify({
+          ...form,
+          services: form.services || null,
+        }),
       });
       if (res.ok) {
-        const data = await res.json();
-        setPartners((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, show_on_landing: data.show_on_landing } : p))
-        );
+        setShowModal(false);
+        await fetchData();
       }
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Удалить партнёра?")) return;
+    try {
+      await fetch(`/api/landing/admin/partners/${id}`, {
+        method: "DELETE",
+        headers,
+      });
+      await fetchData();
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleActive = async (p: Partner) => {
+    try {
+      await fetch(`/api/landing/admin/partners/${p.id}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ is_active: !p.is_active }),
+      });
+      await fetchData();
     } catch {
       // ignore
     }
@@ -77,6 +174,8 @@ export default function LandingAdminPage() {
     return true;
   });
 
+  const uniqueCities = [...new Set(partners.map((p) => p.city))].sort();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -87,14 +186,23 @@ export default function LandingAdminPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Globe className="h-6 w-6" />
-          Управление лендингом
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Управляйте отображением партнёров и городов на странице casco.kz
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Globe className="h-6 w-6" />
+            Управление лендингом
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Партнёры и города для casco.kz
+          </p>
+        </div>
+        <button
+          onClick={openCreate}
+          className="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors cursor-pointer"
+        >
+          <Plus className="h-4 w-4" />
+          Добавить партнёра
+        </button>
       </div>
 
       {/* Cities overview */}
@@ -120,15 +228,15 @@ export default function LandingAdminPage() {
           )}
         </div>
         <p className="text-xs text-gray-400 mt-3">
-          Города отображаются автоматически на основе активных партнёров, показанных на лендинге
+          Города формируются автоматически из активных партнёров
         </p>
       </div>
 
-      {/* Partners */}
+      {/* Partners table */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
           <Building2 className="h-5 w-5 text-yellow-500" />
-          Партнёры на лендинге
+          Партнёры ({partners.length})
         </h2>
 
         {/* Filters */}
@@ -149,10 +257,8 @@ export default function LandingAdminPage() {
             className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
           >
             <option value="">Все города</option>
-            {cities.map((c) => (
-              <option key={c.name} value={c.name}>
-                {c.name} ({c.count})
-              </option>
+            {uniqueCities.map((c) => (
+              <option key={c} value={c}>{c}</option>
             ))}
           </select>
         </div>
@@ -164,9 +270,11 @@ export default function LandingAdminPage() {
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 font-medium text-gray-500">Партнёр</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-500">Город</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-500">Тип</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-500">Статус</th>
-                <th className="text-center py-3 px-4 font-medium text-gray-500">На лендинге</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-500">Адрес</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-500">Телефон</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-500">Услуги</th>
+                <th className="text-center py-3 px-4 font-medium text-gray-500">Статус</th>
+                <th className="text-center py-3 px-4 font-medium text-gray-500">Действия</th>
               </tr>
             </thead>
             <tbody>
@@ -174,51 +282,64 @@ export default function LandingAdminPage() {
                 <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4 font-medium text-gray-900">{p.name}</td>
                   <td className="py-3 px-4 text-gray-600">{p.city}</td>
-                  <td className="py-3 px-4">
-                    <span className="text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-1">
-                      {p.type === "SERVICE_CENTER"
-                        ? "СЦ"
-                        : p.type === "AUTO_SHOP"
-                          ? "Магазин"
-                          : "Мойка"}
-                    </span>
+                  <td className="py-3 px-4 text-gray-600 max-w-[200px] truncate">
+                    {p.address || "—"}
                   </td>
+                  <td className="py-3 px-4 text-gray-600">{p.phone || "—"}</td>
                   <td className="py-3 px-4">
-                    <span
-                      className={`text-xs rounded-full px-2 py-1 ${
-                        p.is_active
-                          ? "bg-green-50 text-green-700"
-                          : "bg-red-50 text-red-700"
-                      }`}
-                    >
-                      {p.is_active ? "Активен" : "Неактивен"}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {p.services.slice(0, 2).map((s) => (
+                        <span
+                          key={s}
+                          className="text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-0.5"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                      {p.services.length > 2 && (
+                        <span className="text-xs text-gray-400">+{p.services.length - 2}</span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 px-4 text-center">
                     <button
-                      onClick={() => toggleVisibility(p.id)}
+                      onClick={() => toggleActive(p)}
                       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                        p.show_on_landing
+                        p.is_active
                           ? "bg-green-50 text-green-700 hover:bg-green-100"
                           : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                       }`}
                     >
-                      {p.show_on_landing ? (
-                        <>
-                          <Eye className="h-3.5 w-3.5" /> Показан
-                        </>
+                      {p.is_active ? (
+                        <><Eye className="h-3.5 w-3.5" /> Активен</>
                       ) : (
-                        <>
-                          <EyeOff className="h-3.5 w-3.5" /> Скрыт
-                        </>
+                        <><EyeOff className="h-3.5 w-3.5" /> Скрыт</>
                       )}
                     </button>
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => openEdit(p)}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+                        title="Редактировать"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
+                        title="Удалить"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-gray-500">
+                  <td colSpan={7} className="py-8 text-center text-gray-500">
                     Ничего не найдено
                   </td>
                 </tr>
@@ -227,11 +348,150 @@ export default function LandingAdminPage() {
           </table>
         </div>
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {editingId ? "Редактировать партнёра" : "Новый партнёр"}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1 rounded-lg hover:bg-gray-100 cursor-pointer"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Название *
+                </label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                  placeholder="Например: AutoMaster"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Город *
+                  </label>
+                  <input
+                    type="text"
+                    value={form.city}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                    placeholder="Алматы"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Телефон
+                  </label>
+                  <input
+                    type="text"
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                    placeholder="+7 777 123 4567"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Адрес
+                </label>
+                <input
+                  type="text"
+                  value={form.address}
+                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                  placeholder="ул. Абая 100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Услуги (через запятую)
+                </label>
+                <input
+                  type="text"
+                  value={form.services}
+                  onChange={(e) => setForm({ ...form, services: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                  placeholder="КАСКО, ТО, Диагностика"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  URL логотипа
+                </label>
+                <input
+                  type="text"
+                  value={form.logo_url}
+                  onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Порядок сортировки
+                  </label>
+                  <input
+                    type="number"
+                    value={form.sort_order}
+                    onChange={(e) =>
+                      setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.is_active}
+                      onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-500"
+                    />
+                    <span className="text-sm text-gray-700">Активен на лендинге</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || !form.name || !form.city}
+                className="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                <Check className="h-4 w-4" />
+                {saving ? "Сохранение..." : editingId ? "Сохранить" : "Создать"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
-
-function getCookie(name: string): string {
-  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  return match ? match[2] : "";
 }
