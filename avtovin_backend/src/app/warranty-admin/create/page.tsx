@@ -3,6 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, ChevronDown } from "lucide-react";
+import {
+  Select as ShadSelect,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CatalogBrand {
   id: string;
@@ -348,19 +355,18 @@ export default function CreateWarrantyPage() {
             {/* Year select */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Год *</label>
-              <select
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                className={`${inputClass} appearance-none`}
-                required
-              >
-                <option value="">Выберите год</option>
-                {yearOptions.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+              <ShadSelect value={year} onValueChange={(val) => setYear(val)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Выберите год" />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </ShadSelect>
             </div>
 
             {/* VIN */}
