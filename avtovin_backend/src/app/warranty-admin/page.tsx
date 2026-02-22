@@ -66,14 +66,15 @@ export default function WarrantyAdminPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Гарантии</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Гарантии</h1>
           <p className="text-sm text-gray-500 mt-1">Управление гарантийными договорами</p>
         </div>
         <button
           onClick={() => router.push("/warranty-admin/create")}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium text-sm"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium text-sm w-full sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           Добавить гарантию
@@ -81,14 +82,14 @@ export default function WarrantyAdminPage() {
       </div>
 
       {/* Search + Filter */}
-      <div className="flex gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск по номеру договора, ФИО или VIN..."
+            placeholder="Поиск по номеру, ФИО или VIN..."
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
           />
         </div>
@@ -104,42 +105,42 @@ export default function WarrantyAdminPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-3">
-          <div className="p-2 bg-gray-100 rounded-lg">
-            <Shield className="h-5 w-5 text-gray-600" />
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+          <div className="p-1.5 sm:p-2 bg-gray-100 rounded-lg">
+            <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">{warranties.length}</p>
-            <p className="text-xs text-gray-500">Всего</p>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">{warranties.length}</p>
+            <p className="text-[10px] sm:text-xs text-gray-500">Всего</p>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-3">
-          <div className="p-2 bg-emerald-100 rounded-lg">
-            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+        <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+          <div className="p-1.5 sm:p-2 bg-emerald-100 rounded-lg">
+            <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">
               {warranties.filter((w) => w.isActive && !isExpired(w)).length}
             </p>
-            <p className="text-xs text-gray-500">Активные</p>
+            <p className="text-[10px] sm:text-xs text-gray-500">Активные</p>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-3">
-          <div className="p-2 bg-red-100 rounded-lg">
-            <ShieldX className="h-5 w-5 text-red-600" />
+        <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+          <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
+            <ShieldX className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">
               {warranties.filter((w) => !w.isActive || isExpired(w)).length}
             </p>
-            <p className="text-xs text-gray-500">Истёкшие</p>
+            <p className="text-[10px] sm:text-xs text-gray-500">Истёкшие</p>
           </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -154,15 +155,11 @@ export default function WarrantyAdminPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-500">
-                  Загрузка...
-                </td>
+                <td colSpan={6} className="text-center py-8 text-gray-500">Загрузка...</td>
               </tr>
             ) : warranties.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-500">
-                  Гарантии не найдены
-                </td>
+                <td colSpan={6} className="text-center py-8 text-gray-500">Гарантии не найдены</td>
               </tr>
             ) : (
               warranties.map((w) => {
@@ -187,9 +184,7 @@ export default function WarrantyAdminPage() {
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          active
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-red-100 text-red-700"
+                          active ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
                         }`}
                       >
                         {active ? "Активна" : "Истекла"}
@@ -201,6 +196,43 @@ export default function WarrantyAdminPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">Загрузка...</div>
+        ) : warranties.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">Гарантии не найдены</div>
+        ) : (
+          warranties.map((w) => {
+            const expired = isExpired(w);
+            const active = w.isActive && !expired;
+            return (
+              <div key={w.id} className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="font-medium text-gray-900 text-sm">{w.contractNumber}</p>
+                    <p className="text-sm text-gray-700">{w.clientName}</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium shrink-0 ${
+                      active ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {active ? "Активна" : "Истекла"}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 space-y-1">
+                  <p>{w.brand} {w.model} {w.year}</p>
+                  {w.user?.phone && <p>{w.user.phone}</p>}
+                  <p className="font-mono">{w.vin || "—"}</p>
+                  <p>{formatDate(w.startDate)} — {formatDate(w.endDate)}</p>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

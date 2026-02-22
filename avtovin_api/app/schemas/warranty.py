@@ -21,6 +21,7 @@ class WarrantyOut(CamelModel):
     start_date: datetime
     end_date: datetime
     is_active: bool = True
+    doc_urls: str | None = None
     created_by_id: str
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -40,6 +41,7 @@ class WarrantyCreate(CamelModel):
     user_id: str | None = None
     car_id: str | None = None
     phone: str | None = None
+    doc_urls: str | None = None
 
 
 class WarrantyUpdate(CamelModel):

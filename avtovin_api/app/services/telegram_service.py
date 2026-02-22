@@ -21,6 +21,24 @@ async def send_telegram(text: str) -> bool:
         return False
 
 
+async def send_telegram_document(file_path: str, caption: str = "") -> bool:
+    """Send a document/photo file to the Telegram group chat."""
+    if not settings.telegram_bot_token or not settings.telegram_chat_id:
+        return False
+
+    url = f"https://api.telegram.org/bot{settings.telegram_bot_token}/sendDocument"
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            with open(file_path, "rb") as f:
+                resp = await client.post(url, data={
+                    "chat_id": settings.telegram_chat_id,
+                    "caption": caption[:1024] if caption else "",
+                }, files={"document": (file_path.split("/")[-1], f)})
+            return resp.status_code == 200
+    except Exception:
+        return False
+
+
 def format_warranty_message(
     contract_number: str,
     client_name: str,

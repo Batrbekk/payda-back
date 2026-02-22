@@ -22,6 +22,7 @@ class Warranty(Base):
     start_date: Mapped[datetime] = mapped_column(DateTime)
     end_date: Mapped[datetime] = mapped_column(DateTime)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    doc_urls: Mapped[str | None] = mapped_column(String, nullable=True)
     created_by_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())

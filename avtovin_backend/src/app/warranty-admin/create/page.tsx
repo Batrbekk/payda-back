@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, ChevronDown } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, Upload, X, FileText, Image } from "lucide-react";
 import {
   Select as ShadSelect,
   SelectContent,
@@ -21,6 +21,12 @@ interface CatalogModel {
   id: string;
   name: string;
   brandId: string;
+}
+
+interface UploadedFile {
+  filename: string;
+  url: string;
+  originalName: string;
 }
 
 function getToken(): string {
@@ -44,12 +50,10 @@ function calcEndDate(carYear: number): Date {
   const now = new Date();
   const currentYear = now.getFullYear();
   if (currentYear - carYear >= 2) {
-    // БУ — 1 месяц
     const end = new Date(now);
     end.setMonth(end.getMonth() + 1);
     return end;
   }
-  // Новая — 5 лет
   const end = new Date(now);
   end.setFullYear(end.getFullYear() + 5);
   return end;
@@ -100,9 +104,9 @@ function Combobox({
           disabled ? "bg-gray-100 cursor-not-allowed" : "bg-white"
         }`}
       >
-        <span className={`flex items-center gap-2 ${value ? "text-gray-900" : "text-gray-400"}`}>
+        <span className={`flex items-center gap-2 truncate ${value ? "text-gray-900" : "text-gray-400"}`}>
           {selectedLogo && (
-            <img src={selectedLogo} alt="" className="w-5 h-5 object-contain" />
+            <img src={selectedLogo} alt="" className="w-5 h-5 object-contain shrink-0" />
           )}
           {value || placeholder}
         </span>
@@ -166,6 +170,14 @@ export default function CreateWarrantyPage() {
   const [modelName, setModelName] = useState("");
   const [year, setYear] = useState("");
 
+  // File uploads
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Responsibility
+  const [accepted, setAccepted] = useState(false);
+
   // Catalog data
   const [brands, setBrands] = useState<CatalogBrand[]>([]);
   const [models, setModels] = useState<CatalogModel[]>([]);
@@ -214,7 +226,47 @@ export default function CreateWarrantyPage() {
   const yearOptions = Array.from({ length: currentYear - 1990 + 1 }, (_, i) => currentYear - i);
 
   const isFormValid =
-    contractNumber && phone && clientName && brandName && modelName && year && vin;
+    contractNumber && phone && clientName && brandName && modelName && year && vin && accepted;
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+      }
+
+      const res = await fetch("/api/warranties/upload-docs", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Ошибка загрузки");
+      }
+
+      const data: { filename: string; url: string }[] = await res.json();
+      const newFiles = data.map((d, i) => ({
+        ...d,
+        originalName: files[i]?.name || d.filename,
+      }));
+      setUploadedFiles((prev) => [...prev, ...newFiles]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Ошибка загрузки файлов");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const removeFile = (idx: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,6 +275,7 @@ export default function CreateWarrantyPage() {
     setSaving(true);
     setError("");
     try {
+      const docUrls = uploadedFiles.map((f) => f.url).join(",");
       const payload = {
         contractNumber,
         phone,
@@ -231,9 +284,10 @@ export default function CreateWarrantyPage() {
         brand: brandName,
         model: modelName,
         year: parseInt(year),
-        plateNumber: contractNumber, // ГРНЗ = номер договора
+        plateNumber: contractNumber,
         startDate: toISODate(today),
         endDate: endDate ? toISODate(endDate) : undefined,
+        docUrls: docUrls || undefined,
       };
 
       const res = await fetch("/api/warranties", {
@@ -260,21 +314,23 @@ export default function CreateWarrantyPage() {
   const inputClass =
     "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none";
 
+  const isImage = (name: string) => /\.(png|jpg|jpeg)$/i.test(name);
+
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <button
         onClick={() => router.push("/warranty-admin")}
-        className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6"
+        className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 sm:mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
         Назад к списку
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Добавить гарантию</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Добавить гарантию</h1>
 
       {success && (
         <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm flex items-center gap-2">
-          <Check className="h-4 w-4" />
+          <Check className="h-4 w-4 shrink-0" />
           Гарантия успешно создана! Перенаправление...
         </div>
       )}
@@ -285,7 +341,7 @@ export default function CreateWarrantyPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
         {/* ГРНЗ / Номер договора */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -302,7 +358,7 @@ export default function CreateWarrantyPage() {
         </div>
 
         {/* Phone + Name */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Телефон клиента *
@@ -332,10 +388,9 @@ export default function CreateWarrantyPage() {
         </div>
 
         {/* Car details */}
-        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
           <p className="text-sm font-medium text-gray-700 mb-3">Данные автомобиля</p>
-          <div className="grid grid-cols-2 gap-4">
-            {/* Brand combobox */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Combobox
               label="Марка"
               value={brandName}
@@ -350,21 +405,17 @@ export default function CreateWarrantyPage() {
                 setModelName("");
               }}
             />
-
-            {/* Model combobox */}
             <Combobox
               label="Модель"
               value={modelName}
               options={models}
               placeholder={brandId ? "Выберите модель" : "Сначала марку"}
               disabled={!brandId}
-              onChange={(id, name, _logo) => {
+              onChange={(id, name) => {
                 setModelId(id);
                 setModelName(name);
               }}
             />
-
-            {/* Year select */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Год *</label>
               <ShadSelect value={year} onValueChange={(val) => setYear(val)}>
@@ -380,8 +431,6 @@ export default function CreateWarrantyPage() {
                 </SelectContent>
               </ShadSelect>
             </div>
-
-            {/* VIN */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">VIN *</label>
               <input
@@ -397,31 +446,96 @@ export default function CreateWarrantyPage() {
         </div>
 
         {/* Dates (auto-calculated, readonly) */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm font-medium text-gray-700 mb-3">Срок гарантии</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Дата начала
-              </label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Дата начала</label>
               <div className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900">
                 {startDateStr}
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Дата окончания
-              </label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Дата окончания</label>
               <div className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900">
                 {endDateStr}
               </div>
             </div>
           </div>
           {warrantyType && (
-            <p className="mt-2 text-xs text-blue-600">
-              Тип: {warrantyType}
-            </p>
+            <p className="mt-2 text-xs text-blue-600">Тип: {warrantyType}</p>
           )}
+        </div>
+
+        {/* Document uploads */}
+        <div className="p-3 sm:p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <p className="text-sm font-medium text-gray-700 mb-1">Документы</p>
+          <p className="text-xs text-gray-500 mb-3">
+            Прикрепите фото/скан техпаспорта и удостоверения личности (PDF, PNG, JPG)
+          </p>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg"
+            multiple
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-2 px-4 py-2 border border-amber-300 bg-white rounded-lg text-sm text-gray-700 hover:bg-amber-100 disabled:opacity-50"
+          >
+            <Upload className="h-4 w-4" />
+            {uploading ? "Загрузка..." : "Выбрать файлы"}
+          </button>
+
+          {uploadedFiles.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {uploadedFiles.map((f, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between gap-2 px-3 py-2 bg-white border border-amber-200 rounded-lg"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    {isImage(f.originalName) ? (
+                      <Image className="h-4 w-4 text-amber-600 shrink-0" />
+                    ) : (
+                      <FileText className="h-4 w-4 text-amber-600 shrink-0" />
+                    )}
+                    <span className="text-sm text-gray-700 truncate">{f.originalName}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(i)}
+                    className="p-1 text-gray-400 hover:text-red-500 shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Responsibility disclaimer */}
+        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={(e) => setAccepted(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+            />
+            <span className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+              Я подтверждаю, что все указанные данные являются достоверными и корректными.
+              За заполненные данные несёт ответственность менеджер, оформляющий гарантию.
+              В случае предоставления недостоверных данных, ответственность возлагается на заполняющего менеджера.
+            </span>
+          </label>
         </div>
 
         <button

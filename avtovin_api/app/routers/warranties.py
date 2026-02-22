@@ -1,9 +1,11 @@
 import asyncio
+import os
 import re
+import uuid
 from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -17,6 +19,12 @@ from app.schemas.warranty import (
     WarrantyOut, WarrantyCreate, WarrantyUpdate,
     SearchUserOut, SearchCarOut, UserBriefForWarranty,
 )
+
+UPLOAD_DIR = "/app/uploads/warranty-docs"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg"}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 router = APIRouter(prefix="/api/warranties", tags=["warranties"])
 
@@ -132,6 +140,7 @@ async def create_warranty(
         year=body.year or 0,
         start_date=start_date,
         end_date=end_date,
+        doc_urls=body.doc_urls or "",
         created_by_id=current_user.id,
     )
     db.add(warranty)
@@ -139,23 +148,40 @@ async def create_warranty(
     await db.refresh(warranty)
 
     # Fire-and-forget Telegram notification
-    try:
-        from app.services.telegram_service import send_telegram, format_warranty_message
-        msg = format_warranty_message(
-            contract_number=body.contract_number,
-            client_name=body.client_name,
-            phone=body.phone or "",
-            brand=body.brand or "",
-            model=body.model or "",
-            year=body.year or 0,
-            vin=body.vin or "",
-            start_date=start_date.strftime("%d.%m.%Y"),
-            end_date=end_date.strftime("%d.%m.%Y"),
-            manager_name=current_user.name,
-        )
-        asyncio.create_task(send_telegram(msg))
-    except Exception:
-        pass  # Don't block warranty creation
+    async def _send_tg():
+        try:
+            from app.services.telegram_service import (
+                send_telegram, send_telegram_document, format_warranty_message,
+            )
+            msg = format_warranty_message(
+                contract_number=body.contract_number,
+                client_name=body.client_name,
+                phone=body.phone or "",
+                brand=body.brand or "",
+                model=body.model or "",
+                year=body.year or 0,
+                vin=body.vin or "",
+                start_date=start_date.strftime("%d.%m.%Y"),
+                end_date=end_date.strftime("%d.%m.%Y"),
+                manager_name=current_user.name,
+            )
+            await send_telegram(msg)
+
+            # Send attached documents
+            if body.doc_urls:
+                for url in body.doc_urls.split(","):
+                    url = url.strip()
+                    if not url:
+                        continue
+                    filename = url.split("/")[-1]
+                    filepath = os.path.join(UPLOAD_DIR, filename)
+                    if os.path.exists(filepath):
+                        caption = f"📎 {body.contract_number} — {body.client_name}"
+                        await send_telegram_document(filepath, caption)
+        except Exception:
+            pass
+
+    asyncio.create_task(_send_tg())
 
     return WarrantyOut.model_validate(warranty)
 
@@ -203,6 +229,62 @@ async def delete_warranty(
     await db.delete(warranty)
     await db.commit()
     return {"message": "Удалено"}
+
+
+@router.post("/upload-docs")
+async def upload_warranty_docs(
+    files: list[UploadFile] = File(...),
+    _user: User = Depends(require_warranty_manager),
+):
+    """Upload tech passport / ID documents. Returns list of saved file paths."""
+    saved = []
+    for f in files:
+        ext = os.path.splitext(f.filename or "")[1].lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(status_code=400, detail=f"Недопустимый формат: {ext}")
+
+        content = await f.read()
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=400, detail="Файл слишком большой (макс. 10МБ)")
+
+        filename = f"{uuid.uuid4().hex}{ext}"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        with open(filepath, "wb") as out:
+            out.write(content)
+
+        saved.append({"filename": filename, "url": f"/uploads/warranty-docs/{filename}"})
+
+    return saved
+
+
+@router.post("/{warranty_id}/send-docs")
+async def send_warranty_docs_to_telegram(
+    warranty_id: str,
+    _user: User = Depends(require_warranty_manager),
+    db: AsyncSession = Depends(get_db),
+):
+    """Send uploaded documents attached to a warranty to Telegram."""
+    result = await db.execute(select(Warranty).where(Warranty.id == warranty_id))
+    warranty = result.scalar_one_or_none()
+    if not warranty:
+        raise HTTPException(status_code=404, detail="Гарантия не найдена")
+
+    if not warranty.doc_urls:
+        return {"message": "Нет прикреплённых документов"}
+
+    from app.services.telegram_service import send_telegram_document
+    urls = [u.strip() for u in warranty.doc_urls.split(",") if u.strip()]
+    sent = 0
+    for url in urls:
+        filename = url.split("/")[-1]
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        if os.path.exists(filepath):
+            caption = f"📎 {warranty.contract_number} — {warranty.client_name}"
+            ok = await send_telegram_document(filepath, caption)
+            if ok:
+                sent += 1
+
+    return {"message": f"Отправлено {sent}/{len(urls)} документов"}
 
 
 @router.get("/search-users", response_model=list[SearchUserOut])
