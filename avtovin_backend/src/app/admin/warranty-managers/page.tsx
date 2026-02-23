@@ -3,6 +3,31 @@
 import { useEffect, useState, useCallback } from "react";
 import { UserCheck, Plus, Trash2, ShieldCheck, X } from "lucide-react";
 
+/* ── Phone mask helpers ── */
+function formatPhoneInput(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  let d = digits;
+  if (d.startsWith("7") || d.startsWith("8")) d = d.slice(1);
+  if (d.length === 0) return "+7 ";
+  let result = "+7 (";
+  result += d.slice(0, 3);
+  if (d.length > 3) result += ") " + d.slice(3, 6);
+  if (d.length > 6) result += "-" + d.slice(6, 8);
+  if (d.length > 8) result += "-" + d.slice(8, 10);
+  return result;
+}
+
+function phoneToRaw(formatted: string): string {
+  const digits = formatted.replace(/\D/g, "");
+  if (digits.startsWith("7")) return "+" + digits;
+  return "+7" + digits;
+}
+
+function formatPhoneDisplay(raw: string): string {
+  if (!raw) return "—";
+  return formatPhoneInput(raw);
+}
+
 interface Manager {
   id: string;
   phone: string;
@@ -64,7 +89,7 @@ export default function WarrantyManagersPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${getToken()}`,
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, phone: phoneToRaw(form.phone) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || data.error);
@@ -157,8 +182,8 @@ export default function WarrantyManagersPage() {
                 <input
                   type="text"
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="+77001234567"
+                  onChange={(e) => setForm({ ...form, phone: formatPhoneInput(e.target.value) })}
+                  placeholder="+7 (700) 123-45-67"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
                   required
                 />
@@ -245,7 +270,7 @@ export default function WarrantyManagersPage() {
               managers.map((m) => (
                 <tr key={m.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-900">{m.name || "—"}</td>
-                  <td className="px-4 py-3 text-gray-700">{m.phone}</td>
+                  <td className="px-4 py-3 text-gray-700">{formatPhoneDisplay(m.phone)}</td>
                   <td className="px-4 py-3 text-gray-500">{m.email || "—"}</td>
                   <td className="px-4 py-3 text-gray-700">{m.salonName || "—"}</td>
                   <td className="px-4 py-3">
