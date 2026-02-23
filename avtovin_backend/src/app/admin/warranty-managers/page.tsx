@@ -296,18 +296,18 @@ export default function WarrantyManagersPage() {
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+        <table className="w-full text-sm table-fixed">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">ФИО</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Телефон</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Город</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Автосалон</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Гарантии</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Дата</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
+              <th className="text-left px-3 py-2.5 font-medium text-gray-600 w-[160px]">ФИО</th>
+              <th className="text-left px-3 py-2.5 font-medium text-gray-600 w-[150px]">Телефон</th>
+              <th className="text-left px-3 py-2.5 font-medium text-gray-600 w-[170px]">Email</th>
+              <th className="text-left px-3 py-2.5 font-medium text-gray-600 w-[110px]">Город</th>
+              <th className="text-left px-3 py-2.5 font-medium text-gray-600 w-[120px]">Автосалон</th>
+              <th className="text-left px-3 py-2.5 font-medium text-gray-600 w-[100px]">Гарантии</th>
+              <th className="text-left px-3 py-2.5 font-medium text-gray-600 w-[90px]">Дата</th>
+              <th className="px-2 py-2.5 w-[70px]"></th>
             </tr>
           </thead>
           <tbody>
@@ -322,33 +322,29 @@ export default function WarrantyManagersPage() {
             ) : (
               managers.map((m) => (
                 <tr key={m.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{m.name || "—"}</td>
-                  <td className="px-4 py-3 text-gray-700">{formatPhoneDisplay(m.phone)}</td>
-                  <td className="px-4 py-3 text-gray-500">{m.email || "—"}</td>
-                  <td className="px-4 py-3 text-gray-700">{m.city || "—"}</td>
-                  <td className="px-4 py-3 text-gray-700">{m.salonName || "—"}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                        {m.activeWarranties} акт.
-                      </span>
-                      <span className="text-gray-400 text-xs">/ {m.totalWarranties} всего</span>
-                    </div>
+                  <td className="px-3 py-2.5 font-medium text-gray-900 truncate">{m.name || "—"}</td>
+                  <td className="px-3 py-2.5 text-gray-700 whitespace-nowrap">{formatPhoneDisplay(m.phone)}</td>
+                  <td className="px-3 py-2.5 text-gray-500 truncate">{m.email || "—"}</td>
+                  <td className="px-3 py-2.5 text-gray-700 truncate">{m.city || "—"}</td>
+                  <td className="px-3 py-2.5 text-gray-700 truncate">{m.salonName || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    <span className="text-xs font-medium text-emerald-700">{m.activeWarranties} акт.</span>
+                    <span className="text-gray-400 text-xs"> / {m.totalWarranties}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(m.createdAt)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
+                  <td className="px-3 py-2.5 text-gray-500 text-xs whitespace-nowrap">{formatDate(m.createdAt)}</td>
+                  <td className="px-2 py-2.5">
+                    <div className="flex items-center gap-0.5">
                       <button
                         onClick={() => openEdit(m)}
                         className="p-1 text-gray-400 hover:text-yellow-600"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(m.id)}
                         className="p-1 text-gray-400 hover:text-red-600"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </td>
