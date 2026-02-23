@@ -41,6 +41,8 @@ async def list_warranties(
 
     if current_user.role == "USER":
         query = query.where(Warranty.user_id == current_user.id)
+    elif current_user.role == "WARRANTY_MANAGER":
+        query = query.where(Warranty.created_by_id == current_user.id)
     elif user_id:
         query = query.where(Warranty.user_id == user_id)
 
