@@ -16,6 +16,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { KZ_CITIES } from "@/lib/kz-cities";
 
 interface Partner {
   id: string;
@@ -472,13 +474,16 @@ export default function LandingAdminPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Город *
                   </label>
-                  <input
-                    type="text"
-                    value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
-                    placeholder="Алматы"
-                  />
+                  <Select value={form.city} onValueChange={(val) => setForm({ ...form, city: val })}>
+                    <SelectTrigger className="w-full h-9 border-gray-200 rounded-lg text-sm">
+                      <SelectValue placeholder="Выберите город" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {KZ_CITIES.map((city) => (
+                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

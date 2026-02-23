@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Plus, Star, User, Pencil, Trash2, MapPin, X, Instagram, Globe, MessageCircle, Map, Image as ImageIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { KZ_CITIES } from "@/lib/kz-cities";
 
 const TYPE_LABELS: Record<string, { title: string; singular: string; addBtn: string }> = {
   SERVICE_CENTER: { title: "Сервисные центры", singular: "СЦ", addBtn: "Добавить СЦ" },
@@ -376,7 +377,16 @@ export default function PartnersPage({ type }: { type: string }) {
               </div>
               <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Описание" className={inp + " resize-none"} rows={2} />
               <div className="grid grid-cols-2 gap-3">
-                <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Город" className={inp} />
+                <Select value={form.city} onValueChange={(val) => setForm({ ...form, city: val })}>
+                  <SelectTrigger className="w-full h-9 border-gray-300 rounded-lg text-sm">
+                    <SelectValue placeholder="Город" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {KZ_CITIES.map((city) => (
+                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <input value={form.managerPhone} onChange={(e) => setForm({ ...form, managerPhone: e.target.value })} placeholder="Телефон менеджера" className={inp} />
               </div>
 

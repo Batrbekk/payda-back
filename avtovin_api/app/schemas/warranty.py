@@ -78,6 +78,7 @@ class WarrantyManagerOut(CamelModel):
     email: str | None = None
     name: str | None = None
     salon_name: str | None = None
+    city: str | None = None
     created_at: datetime | None = None
     total_warranties: int = 0
     active_warranties: int = 0
@@ -89,3 +90,4 @@ class WarrantyManagerCreate(CamelModel):
     email: str
     password: str
     salon_name: str | None = None
+    city: str | None = None

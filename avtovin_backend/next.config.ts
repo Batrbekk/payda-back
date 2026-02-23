@@ -8,10 +8,17 @@ const nextConfig: NextConfig = {
     },
   },
   async rewrites() {
+    const apiBase = process.env.NODE_ENV === "production"
+      ? "http://api:8000"
+      : "https://api.casco.kz";
     return [
       {
         source: "/api/:path*",
-        destination: "http://api:8000/api/:path*",
+        destination: `${apiBase}/api/:path*`,
+      },
+      {
+        source: "/uploads/:path*",
+        destination: `${apiBase}/uploads/:path*`,
       },
     ];
   },

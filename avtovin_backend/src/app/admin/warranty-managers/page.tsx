@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { UserCheck, Plus, Trash2, ShieldCheck, X, Eye, EyeOff } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { KZ_CITIES } from "@/lib/kz-cities";
 
 /* ── Phone mask helpers ── */
 function formatPhoneInput(value: string): string {
@@ -34,6 +36,7 @@ interface Manager {
   email: string | null;
   name: string | null;
   salonName: string | null;
+  city: string | null;
   createdAt: string;
   totalWarranties: number;
   activeWarranties: number;
@@ -58,6 +61,7 @@ export default function WarrantyManagersPage() {
     email: "",
     password: "",
     salonName: "",
+    city: "",
   });
 
   const fetchManagers = useCallback(async () => {
@@ -90,12 +94,16 @@ export default function WarrantyManagersPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${getToken()}`,
         },
-        body: JSON.stringify({ ...form, phone: phoneToRaw(form.phone) }),
+        body: JSON.stringify({
+          ...form,
+          phone: phoneToRaw(form.phone),
+          city: form.city || null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || data.error);
       setShowForm(false);
-      setForm({ phone: "", name: "", email: "", password: "", salonName: "" });
+      setForm({ phone: "", name: "", email: "", password: "", salonName: "", city: "" });
       fetchManagers();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Ошибка");
@@ -232,6 +240,19 @@ export default function WarrantyManagersPage() {
                 </div>
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Город</label>
+                <Select value={form.city} onValueChange={(val) => setForm({ ...form, city: val })}>
+                  <SelectTrigger className="w-full h-9 border-gray-300 rounded-lg text-sm">
+                    <SelectValue placeholder="Выберите город" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {KZ_CITIES.map((city) => (
+                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Автосалон</label>
                 <input
                   type="text"
@@ -261,6 +282,7 @@ export default function WarrantyManagersPage() {
               <th className="text-left px-4 py-3 font-medium text-gray-600">ФИО</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Телефон</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Город</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Автосалон</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Гарантии</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Дата</th>
@@ -270,11 +292,11 @@ export default function WarrantyManagersPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-gray-500">Загрузка...</td>
+                <td colSpan={8} className="text-center py-8 text-gray-500">Загрузка...</td>
               </tr>
             ) : managers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-gray-500">Менеджеры не найдены</td>
+                <td colSpan={8} className="text-center py-8 text-gray-500">Менеджеры не найдены</td>
               </tr>
             ) : (
               managers.map((m) => (
@@ -282,6 +304,7 @@ export default function WarrantyManagersPage() {
                   <td className="px-4 py-3 font-medium text-gray-900">{m.name || "—"}</td>
                   <td className="px-4 py-3 text-gray-700">{formatPhoneDisplay(m.phone)}</td>
                   <td className="px-4 py-3 text-gray-500">{m.email || "—"}</td>
+                  <td className="px-4 py-3 text-gray-700">{m.city || "—"}</td>
                   <td className="px-4 py-3 text-gray-700">{m.salonName || "—"}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">

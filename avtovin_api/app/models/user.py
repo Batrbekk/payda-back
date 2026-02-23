@@ -18,6 +18,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(String, default="USER")  # USER, ADMIN, SC_MANAGER, WARRANTY_MANAGER
     fcm_token: Mapped[str | None] = mapped_column(String, nullable=True)
     salon_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    city: Mapped[str | None] = mapped_column(String, nullable=True)
     balance: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())

@@ -31,7 +31,8 @@ async def list_warranty_managers(
     return [
         WarrantyManagerOut(
             id=m.id, phone=m.phone, email=m.email,
-            name=m.name, salon_name=m.salon_name, created_at=m.created_at,
+            name=m.name, salon_name=m.salon_name, city=m.city,
+            created_at=m.created_at,
             total_warranties=len(m.created_warranties),
             active_warranties=sum(
                 1 for w in m.created_warranties if w.is_active and w.end_date >= now
@@ -66,6 +67,7 @@ async def create_warranty_manager(
         password=hash_password(body.password),
         role="WARRANTY_MANAGER",
         salon_name=body.salon_name,
+        city=body.city,
     )
     db.add(manager)
     await db.commit()
@@ -73,7 +75,8 @@ async def create_warranty_manager(
 
     return WarrantyManagerOut(
         id=manager.id, phone=manager.phone, email=manager.email,
-        name=manager.name, salon_name=manager.salon_name, created_at=manager.created_at,
+        name=manager.name, salon_name=manager.salon_name, city=manager.city,
+        created_at=manager.created_at,
         total_warranties=0, active_warranties=0,
     )
 
@@ -103,7 +106,8 @@ async def update_warranty_manager(
     await db.refresh(manager)
     return WarrantyManagerOut(
         id=manager.id, phone=manager.phone, email=manager.email,
-        name=manager.name, salon_name=manager.salon_name, created_at=manager.created_at,
+        name=manager.name, salon_name=manager.salon_name, city=manager.city,
+        created_at=manager.created_at,
         total_warranties=0, active_warranties=0,
     )
 
