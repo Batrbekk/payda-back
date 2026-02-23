@@ -13,7 +13,9 @@ import {
   Check,
   Eye,
   EyeOff,
+  ExternalLink,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Partner {
   id: string;
@@ -23,6 +25,7 @@ interface Partner {
   phone: string | null;
   logo_url: string | null;
   services: string[];
+  gis_url: string | null;
   sort_order: number;
   is_active: boolean;
 }
@@ -39,6 +42,7 @@ interface FormData {
   phone: string;
   logo_url: string;
   services: string;
+  gis_url: string;
   sort_order: number;
   is_active: boolean;
 }
@@ -50,9 +54,41 @@ const emptyForm: FormData = {
   phone: "",
   logo_url: "",
   services: "",
+  gis_url: "",
   sort_order: 0,
   is_active: true,
 };
+
+/* ── Phone mask helpers ── */
+function formatPhoneInput(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  // Remove leading 7 or 8 if user types full number
+  let d = digits;
+  if (d.startsWith("7") || d.startsWith("8")) d = d.slice(1);
+  if (d.length === 0) return "+7 ";
+  let result = "+7 (";
+  result += d.slice(0, 3);
+  if (d.length > 3) result += ") " + d.slice(3, 6);
+  if (d.length > 6) result += "-" + d.slice(6, 8);
+  if (d.length > 8) result += "-" + d.slice(8, 10);
+  return result;
+}
+
+function phoneToRaw(formatted: string): string {
+  const digits = formatted.replace(/\D/g, "");
+  if (digits.startsWith("7")) return "+" + digits;
+  return "+7" + digits;
+}
+
+function rawToFormatted(raw: string): string {
+  if (!raw) return "";
+  return formatPhoneInput(raw);
+}
+
+/* ── Address helpers ── */
+function stripUl(address: string): string {
+  return address.replace(/^ул\.?\s*/i, "").trim();
+}
 
 function getCookie(name: string): string {
   if (typeof document === "undefined") return "";
@@ -109,10 +145,11 @@ export default function LandingAdminPage() {
     setForm({
       name: p.name,
       city: p.city,
-      address: p.address || "",
-      phone: p.phone || "",
+      address: stripUl(p.address || ""),
+      phone: rawToFormatted(p.phone || ""),
       logo_url: p.logo_url || "",
       services: p.services.join(", "),
+      gis_url: p.gis_url || "",
       sort_order: p.sort_order,
       is_active: p.is_active,
     });
@@ -126,12 +163,21 @@ export default function LandingAdminPage() {
         ? `/api/landing/admin/partners/${editingId}`
         : "/api/landing/admin/partners";
       const method = editingId ? "PUT" : "POST";
+
+      // Clean phone to raw format
+      const rawPhone = form.phone ? phoneToRaw(form.phone) : null;
+      // Clean address — store without "ул." prefix
+      const cleanAddress = form.address ? stripUl(form.address) : null;
+
       const res = await fetch(url, {
         method,
         headers: getAuthHeaders(),
         body: JSON.stringify({
           ...form,
+          phone: rawPhone && rawPhone.length >= 12 ? rawPhone : null,
+          address: cleanAddress || null,
           services: form.services || null,
+          gis_url: form.gis_url || null,
         }),
       });
       if (res.ok) {
@@ -298,6 +344,7 @@ export default function LandingAdminPage() {
                 <th className="text-left py-3 px-4 font-medium text-gray-500">Город</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-500">Адрес</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-500">Телефон</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-500">2GIS</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-500">Услуги</th>
                 <th className="text-center py-3 px-4 font-medium text-gray-500">Статус</th>
                 <th className="text-center py-3 px-4 font-medium text-gray-500">Действия</th>
@@ -309,9 +356,24 @@ export default function LandingAdminPage() {
                   <td className="py-3 px-4 font-medium text-gray-900">{p.name}</td>
                   <td className="py-3 px-4 text-gray-600">{p.city}</td>
                   <td className="py-3 px-4 text-gray-600 max-w-[200px] truncate">
-                    {p.address || "—"}
+                    {p.address ? `ул. ${stripUl(p.address)}` : "—"}
                   </td>
-                  <td className="py-3 px-4 text-gray-600">{p.phone || "—"}</td>
+                  <td className="py-3 px-4 text-gray-600">{p.phone ? rawToFormatted(p.phone) : "—"}</td>
+                  <td className="py-3 px-4">
+                    {p.gis_url ? (
+                      <a
+                        href={p.gis_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span className="text-xs">Ссылка</span>
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
                   <td className="py-3 px-4">
                     <div className="flex flex-wrap gap-1">
                       {p.services.slice(0, 2).map((s) => (
@@ -365,7 +427,7 @@ export default function LandingAdminPage() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-gray-500">
+                  <td colSpan={8} className="py-8 text-center text-gray-500">
                     Ничего не найдено
                   </td>
                 </tr>
@@ -378,7 +440,7 @@ export default function LandingAdminPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 space-y-5">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">
                 {editingId ? "Редактировать партнёра" : "Новый партнёр"}
@@ -425,9 +487,12 @@ export default function LandingAdminPage() {
                   <input
                     type="text"
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    onChange={(e) => {
+                      const formatted = formatPhoneInput(e.target.value);
+                      setForm({ ...form, phone: formatted });
+                    }}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
-                    placeholder="+7 777 123 4567"
+                    placeholder="+7 (777) 123-45-67"
                   />
                 </div>
               </div>
@@ -436,12 +501,30 @@ export default function LandingAdminPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Адрес
                 </label>
+                <div className="flex items-center gap-0">
+                  <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-200 rounded-l-lg bg-gray-50 text-sm text-gray-500 select-none">
+                    ул.
+                  </span>
+                  <input
+                    type="text"
+                    value={form.address}
+                    onChange={(e) => setForm({ ...form, address: stripUl(e.target.value) })}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-r-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                    placeholder="Абая 100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ссылка 2GIS
+                </label>
                 <input
-                  type="text"
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  type="url"
+                  value={form.gis_url}
+                  onChange={(e) => setForm({ ...form, gis_url: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
-                  placeholder="ул. Абая 100"
+                  placeholder="https://2gis.kz/almaty/firm/..."
                 />
               </div>
 
@@ -509,13 +592,13 @@ export default function LandingAdminPage() {
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
                   />
                 </div>
-                <div className="flex items-end">
+                <div className="flex items-end pb-1">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={form.is_active}
-                      onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                      className="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-500"
+                      onCheckedChange={(checked) =>
+                        setForm({ ...form, is_active: checked === true })
+                      }
                     />
                     <span className="text-sm text-gray-700">Активен на лендинге</span>
                   </label>

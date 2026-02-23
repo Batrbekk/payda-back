@@ -22,6 +22,7 @@ class PartnerCreate(BaseModel):
     phone: str | None = None
     logo_url: str | None = None
     services: str | None = None
+    gis_url: str | None = None
     sort_order: int = 0
     is_active: bool = True
 
@@ -33,6 +34,7 @@ class PartnerUpdate(BaseModel):
     phone: str | None = None
     logo_url: str | None = None
     services: str | None = None
+    gis_url: str | None = None
     sort_order: int | None = None
     is_active: bool | None = None
 
@@ -166,6 +168,7 @@ def _partner_dict(p: LandingPartner) -> dict:
         "phone": p.phone,
         "logo_url": p.logo_url,
         "services": [s.strip() for s in p.services.split(",") if s.strip()] if p.services else [],
+        "gis_url": p.gis_url,
         "sort_order": p.sort_order,
         "is_active": p.is_active,
         "created_at": p.created_at.isoformat() if p.created_at else None,

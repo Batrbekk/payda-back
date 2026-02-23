@@ -13,6 +13,7 @@ import {
   Globe,
   Smartphone,
   ChevronRight,
+  ChevronLeft,
   Menu,
   X,
 } from "lucide-react";
@@ -26,6 +27,7 @@ interface Partner {
   phone: string | null;
   logo_url: string | null;
   services: string[];
+  gis_url: string | null;
 }
 
 /* ─── animation helpers ─── */
@@ -132,6 +134,7 @@ export default function Home() {
   const [cities, setCities] = useState<{ name: string; count: number }[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [activeCity, setActiveCity] = useState<string | null>(null);
+  const [partnerPage, setPartnerPage] = useState(0);
   const [hp, setHp] = useState(0); // header progress 0→1
   const heroRef = useRef<HTMLElement>(null);
 
@@ -164,7 +167,7 @@ export default function Home() {
     if (!activeCity) return;
     fetch(`/api/landing/partners?city=${encodeURIComponent(activeCity)}`)
       .then((r) => r.json())
-      .then(setPartners)
+      .then((data) => { setPartners(data); setPartnerPage(0); })
       .catch(() => {});
   }, [activeCity]);
 
@@ -487,58 +490,108 @@ export default function Home() {
             ))}
           </motion.div>
 
-          {/* Partner cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-            {partners.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="bg-white rounded-2xl p-7 border border-[#CCD0D8] flex flex-col gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-              >
-                {/* Top row */}
-                <div className="flex items-center gap-4">
-                  {p.logo_url ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={p.logo_url}
-                      alt={p.name}
-                      className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-[#CCD0D8]"
-                      onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling?.classList.remove("hidden"); }}
-                    />
-                  ) : null}
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0${p.logo_url ? " hidden" : ""}`}
-                    style={{ backgroundColor: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
-                  >
-                    {p.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
-                  </div>
-                  <div className="flex flex-col gap-1 min-w-0">
-                    <span className="text-base font-bold text-[#14181F] truncate">{p.name}</span>
-                    <span className="text-[13px] text-[#8592AD] truncate">
-                      {p.address || p.city}
-                    </span>
-                  </div>
+          {/* Partner cards — paginated carousel, 6 per page */}
+          {(() => {
+            const perPage = 6;
+            const totalPages = Math.ceil(partners.length / perPage);
+            const page = Math.min(partnerPage, Math.max(totalPages - 1, 0));
+            const visible = partners.slice(page * perPage, page * perPage + perPage);
+            return (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                  {visible.map((p, i) => (
+                    <motion.div
+                      key={p.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.08, duration: 0.4 }}
+                      className="bg-white rounded-2xl p-7 border border-[#CCD0D8] flex flex-col gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                    >
+                      <div className="flex items-center gap-4">
+                        {p.logo_url ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={p.logo_url}
+                            alt={p.name}
+                            className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-[#CCD0D8]"
+                            onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling?.classList.remove("hidden"); }}
+                          />
+                        ) : null}
+                        <div
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0${p.logo_url ? " hidden" : ""}`}
+                          style={{ backgroundColor: AVATAR_COLORS[(page * perPage + i) % AVATAR_COLORS.length] }}
+                        >
+                          {p.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
+                        </div>
+                        <div className="flex flex-col gap-1 min-w-0">
+                          <span className="text-base font-bold text-[#14181F] truncate">{p.name}</span>
+                          <span className="text-[13px] text-[#8592AD] truncate flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                            {p.address ? `ул. ${p.address.replace(/^ул\.?\s*/i, "")}` : p.city}
+                          </span>
+                        </div>
+                      </div>
+                      {p.services.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {p.services.map((s) => (
+                            <span key={s} className="text-xs font-medium text-[#4F56D3] bg-[#EEF0FC] rounded-md px-3 py-1">
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {p.gis_url && (
+                        <a
+                          href={p.gis_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 text-sm font-medium text-[#4F56D3] bg-[#EEF0FC] hover:bg-[#DDE1F8] rounded-xl px-4 py-2.5 transition-colors"
+                        >
+                          <MapPin className="w-4 h-4" />
+                          Открыть в 2GIS
+                        </a>
+                      )}
+                    </motion.div>
+                  ))}
+                  {partners.length === 0 && (
+                    <p className="text-[#8592AD] text-center col-span-full py-8">
+                      {cities.length === 0 ? "Загрузка..." : "Нет партнёров в этом городе"}
+                    </p>
+                  )}
                 </div>
-                {/* Tags */}
-                {p.services.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {p.services.map((s) => (
-                      <span key={s} className="text-xs font-medium text-[#4F56D3] bg-[#EEF0FC] rounded-md px-3 py-1">
-                        {s}
-                      </span>
-                    ))}
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-4 mt-2">
+                    <button
+                      onClick={() => setPartnerPage(Math.max(0, page - 1))}
+                      disabled={page === 0}
+                      className="w-10 h-10 rounded-full border border-[#CCD0D8] flex items-center justify-center text-[#8592AD] hover:bg-[#F6F7F9] hover:text-[#14181F] disabled:opacity-30 disabled:cursor-default transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: totalPages }, (_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setPartnerPage(idx)}
+                          className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${
+                            idx === page ? "bg-[#4F56D3] w-8" : "bg-[#CCD0D8] hover:bg-[#8592AD]"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setPartnerPage(Math.min(totalPages - 1, page + 1))}
+                      disabled={page >= totalPages - 1}
+                      className="w-10 h-10 rounded-full border border-[#CCD0D8] flex items-center justify-center text-[#8592AD] hover:bg-[#F6F7F9] hover:text-[#14181F] disabled:opacity-30 disabled:cursor-default transition-colors cursor-pointer"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
                   </div>
                 )}
-              </motion.div>
-            ))}
-            {partners.length === 0 && (
-              <p className="text-[#8592AD] text-center col-span-full py-8">
-                {cities.length === 0 ? "Загрузка..." : "Нет партнёров в этом городе"}
-              </p>
-            )}
-          </div>
+              </>
+            );
+          })()}
         </div>
       </Section>
 
