@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { UserCheck, Plus, Trash2, ShieldCheck, X, Eye, EyeOff } from "lucide-react";
+import { UserCheck, Plus, Trash2, ShieldCheck, X, Eye, EyeOff, Pencil } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { KZ_CITIES } from "@/lib/kz-cities";
 
@@ -51,18 +51,13 @@ export default function WarrantyManagersPage() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const [form, setForm] = useState({
-    phone: "",
-    name: "",
-    email: "",
-    password: "",
-    salonName: "",
-    city: "",
-  });
+  const emptyForm = { phone: "", name: "", email: "", password: "", salonName: "", city: "" };
+  const [form, setForm] = useState(emptyForm);
 
   const fetchManagers = useCallback(async () => {
     setLoading(true);
@@ -83,13 +78,38 @@ export default function WarrantyManagersPage() {
     fetchManagers();
   }, [fetchManagers]);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const openEdit = (m: Manager) => {
+    setEditingId(m.id);
+    setForm({
+      phone: formatPhoneInput(m.phone),
+      name: m.name || "",
+      email: m.email || "",
+      password: "",
+      salonName: m.salonName || "",
+      city: m.city || "",
+    });
+    setError("");
+    setShowPassword(false);
+    setShowForm(true);
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setForm(emptyForm);
+    setError("");
+    setShowPassword(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError("");
     try {
-      const res = await fetch("/api/warranty-managers", {
-        method: "POST",
+      const url = editingId ? `/api/warranty-managers/${editingId}` : "/api/warranty-managers";
+      const method = editingId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${getToken()}`,
@@ -102,8 +122,7 @@ export default function WarrantyManagersPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || data.error);
-      setShowForm(false);
-      setForm({ phone: "", name: "", email: "", password: "", salonName: "", city: "" });
+      closeForm();
       fetchManagers();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Ошибка");
@@ -136,7 +155,7 @@ export default function WarrantyManagersPage() {
           <p className="text-sm text-gray-500 mt-1">Управление продажниками гарантий</p>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={() => { setEditingId(null); setForm(emptyForm); setError(""); setShowPassword(false); setShowForm(true); }}
           className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-medium text-sm"
         >
           <Plus className="h-4 w-4" />
@@ -173,8 +192,8 @@ export default function WarrantyManagersPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Новый менеджер</h2>
-              <button onClick={() => setShowForm(false)} className="p-1 text-gray-400 hover:text-gray-600">
+              <h2 className="text-lg font-semibold text-gray-900">{editingId ? "Редактировать менеджера" : "Новый менеджер"}</h2>
+              <button onClick={closeForm} className="p-1 text-gray-400 hover:text-gray-600">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -185,7 +204,7 @@ export default function WarrantyManagersPage() {
               </div>
             )}
 
-            <form onSubmit={handleCreate} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Телефон *</label>
                 <input
@@ -220,15 +239,17 @@ export default function WarrantyManagersPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Пароль *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {editingId ? "Пароль (оставьте пустым, чтобы не менять)" : "Пароль *"}
+                </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    placeholder="Минимум 6 символов"
+                    placeholder={editingId ? "Оставьте пустым" : "Минимум 6 символов"}
                     className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
-                    required
+                    required={!editingId}
                   />
                   <button
                     type="button"
@@ -267,7 +288,7 @@ export default function WarrantyManagersPage() {
                 disabled={saving}
                 className="w-full py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 disabled:opacity-50"
               >
-                {saving ? "Создание..." : "Создать менеджера"}
+                {saving ? "Сохранение..." : editingId ? "Сохранить" : "Создать менеджера"}
               </button>
             </form>
           </div>
@@ -316,12 +337,20 @@ export default function WarrantyManagersPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(m.createdAt)}</td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => handleDelete(m.id)}
-                      className="p-1 text-gray-400 hover:text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => openEdit(m)}
+                        className="p-1 text-gray-400 hover:text-yellow-600"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(m.id)}
+                        className="p-1 text-gray-400 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
