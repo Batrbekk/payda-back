@@ -267,7 +267,7 @@ export default function LandingAdminPage() {
             Управление лендингом
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Партнёры и города для casco.kz
+            Партнёры и города для Payda
           </p>
         </div>
         <button

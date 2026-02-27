@@ -9,7 +9,7 @@ export default function PrivacyPage() {
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link href="/">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-land.svg" alt="casco.kz" className="h-7" />
+            <img src="/logo-land.svg" alt="Payda" className="h-7" />
           </Link>
           <Link
             href="/"
@@ -33,8 +33,8 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold mt-8 mb-3">1. Общие положения</h2>
             <p>
               Настоящая Политика конфиденциальности (далее — Политика) действует в отношении
-              всей информации, которую сервис casco.kz (далее — Сервис) может получить
-              о Пользователе во время использования сайта casco.kz.
+              всей информации, которую сервис Payda (далее — Сервис) может получить
+              о Пользователе во время использования сайта Payda.
             </p>
           </section>
 
@@ -120,7 +120,7 @@ export default function PrivacyPage() {
 
       <footer className="bg-[#14181F] py-8 px-5 lg:px-[120px]">
         <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-[13px] text-[#8592AD]">&copy; 2026 casco.kz. Все права защищены.</p>
+          <p className="text-[13px] text-[#8592AD]">&copy; 2026 Payda. Все права защищены.</p>
           <div className="flex gap-6">
             <span className="text-[13px] text-white">Политика конфиденциальности</span>
             <Link href="/terms" className="text-[13px] text-[#8592AD] hover:text-white transition-colors">Условия</Link>

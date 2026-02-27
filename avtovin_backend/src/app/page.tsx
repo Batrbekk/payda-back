@@ -13,7 +13,7 @@ export default function Home() {
       <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-8">
         {/* Logo */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-land.svg" alt="casco.kz" className="h-10" />
+        <img src="/logo-land.svg" alt="Payda" className="h-10" />
 
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2">Панель управления</h1>
@@ -52,7 +52,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <p className="text-[#8592AD]/50 text-xs mt-4">&copy; 2026 casco.kz</p>
+        <p className="text-[#8592AD]/50 text-xs mt-4">&copy; 2026 Payda</p>
       </div>
     </div>
   );

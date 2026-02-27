@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     const apiBase = process.env.NODE_ENV === "production"
       ? "http://api:8000"
-      : "https://api.casco.kz";
+      : "http://localhost:8000";
     return [
       {
         source: "/api/:path*",

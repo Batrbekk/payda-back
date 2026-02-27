@@ -9,7 +9,7 @@ export default function TermsPage() {
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link href="/">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-land.svg" alt="casco.kz" className="h-7" />
+            <img src="/logo-land.svg" alt="Payda" className="h-7" />
           </Link>
           <Link
             href="/"
@@ -33,16 +33,16 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold mt-8 mb-3">1. Общие положения</h2>
             <p>
               Настоящие Условия использования (далее — Условия) регулируют порядок использования
-              сайта casco.kz (далее — Сервис). Используя Сервис, вы соглашаетесь с настоящими Условиями.
+              сайта Payda (далее — Сервис). Используя Сервис, вы соглашаетесь с настоящими Условиями.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mt-8 mb-3">2. Описание Сервиса</h2>
             <p>
-              casco.kz — сервис гарантийного обслуживания автомобилей, предоставляющий
+              Payda — сервис гарантийного обслуживания автомобилей, предоставляющий
               автовладельцам доступ к сети партнёрских сервисных центров по всему Казахстану.
-              Через casco.kz пользователи могут:
+              Через Payda пользователи могут:
             </p>
             <ul className="list-disc pl-6 space-y-2 mt-3">
               <li>Оформить гарантию на автомобиль</li>
@@ -55,7 +55,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold mt-8 mb-3">3. Оформление гарантии</h2>
             <p>
-              Для оформления гарантии необходимо связаться с менеджером casco.kz и
+              Для оформления гарантии необходимо связаться с менеджером Payda и
               назначить первичный осмотр автомобиля. После успешного осмотра гарантия
               активируется. Для автомобилей, приобретённых в автосалонах-партнёрах,
               гарантия активируется автоматически.
@@ -76,7 +76,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold mt-8 mb-3">5. Ответственность</h2>
             <p>
-              casco.kz несёт ответственность за организацию гарантийного обслуживания
+              Payda несёт ответственность за организацию гарантийного обслуживания
               в рамках условий гарантии. Качество ремонтных работ обеспечивается
               партнёрскими сервисными центрами. Претензии по качеству выполненных работ
               рассматриваются совместно с сервисным центром.
@@ -87,7 +87,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold mt-8 mb-3">6. Партнёрские сервисные центры</h2>
             <p>
               Сервисные центры, представленные на платформе, являются проверенными партнёрами
-              casco.kz. Каждый партнёр проходит аттестацию и соответствует стандартам качества.
+              Payda. Каждый партнёр проходит аттестацию и соответствует стандартам качества.
               Стоимость работ, не покрываемых гарантией, определяется сервисным центром.
             </p>
           </section>
@@ -127,7 +127,7 @@ export default function TermsPage() {
 
       <footer className="bg-[#14181F] py-8 px-5 lg:px-[120px]">
         <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-[13px] text-[#8592AD]">&copy; 2026 casco.kz. Все права защищены.</p>
+          <p className="text-[13px] text-[#8592AD]">&copy; 2026 Payda. Все права защищены.</p>
           <div className="flex gap-6">
             <Link href="/privacy" className="text-[13px] text-[#8592AD] hover:text-white transition-colors">Политика конфиденциальности</Link>
             <span className="text-[13px] text-white">Условия</span>
