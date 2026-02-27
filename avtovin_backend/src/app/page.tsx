@@ -12,8 +12,7 @@ export default function Home() {
 
       <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-8">
         {/* Logo */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-land.svg" alt="Payda" className="h-10" />
+        <span className="text-3xl font-bold text-white tracking-tight">Payda</span>
 
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2">Панель управления</h1>

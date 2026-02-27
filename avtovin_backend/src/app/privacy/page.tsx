@@ -8,8 +8,7 @@ export default function PrivacyPage() {
       <header className="bg-[#0A0B2B] py-6 px-5 lg:px-[120px]">
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link href="/">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-land.svg" alt="Payda" className="h-7" />
+            <span className="text-xl font-bold text-white tracking-tight">Payda</span>
           </Link>
           <Link
             href="/"
