@@ -69,11 +69,11 @@ async def seed_data(db: AsyncSession = Depends(get_db)):
 
     # Service Centers (5)
     sc_data = [
-        ("Payda Auto Service", "SERVICE_CENTER", "+77011234501", 20, 0),
-        ("Quick Oil", "SERVICE_CENTER", "+77011234502", 15, 0),
+        ("Payda Auto Service", "SERVICE_CENTER", "+77011234501", 20, 15),
+        ("Quick Oil", "SERVICE_CENTER", "+77011234502", 15, 10),
         ("AutoParts KZ", "AUTO_SHOP", "+77011234503", 10, 5),
-        ("Clean Car", "CAR_WASH", "+77011234504", 25, 10),
-        ("Premium Service", "SERVICE_CENTER", "+77011234505", 18, 0),
+        ("Clean Car", "CAR_WASH", "+77011234504", 25, 20),
+        ("Premium Service", "SERVICE_CENTER", "+77011234505", 18, 12),
     ]
 
     for name, sc_type, phone, comm, disc in sc_data:
@@ -103,7 +103,7 @@ async def seed_data(db: AsyncSession = Depends(get_db)):
 
     # Settings
     for key, value in [
-        ("warranty_whatsapp_link", "https://wa.me/77760047836"),
+        ("warranty_whatsapp_link", "https://wa.me/77758221235"),
         ("warranty_conditions", "Гарантия действует на оригинальные детали и работы."),
         ("terms_of_service", "Условия использования приложения Payda."),
         ("privacy_policy", "Политика конфиденциальности приложения Payda."),

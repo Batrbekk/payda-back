@@ -109,8 +109,8 @@ export default function PrivacyPage() {
                 paydacasco@gmail.com
               </a>{" "}
               или по телефону{" "}
-              <a href="tel:+77072292441" className="text-[#4F56D3] hover:underline">
-                +7 707 229 24 41
+              <a href="tel:+77758221235" className="text-[#4F56D3] hover:underline">
+                +7 775 822 12 35
               </a>.
             </p>
           </section>
