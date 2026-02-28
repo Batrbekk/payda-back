@@ -11,6 +11,13 @@ class CarInfoBrief(CamelModel):
     model: str | None = None
     year: int | None = None
     plate_number: str | None = None
+    vin: str | None = None
+    mileage: int | None = None
+    engine_type: str | None = None
+    last_service_at: datetime | None = None
+    last_service_mileage: int | None = None
+    photo_url: str | None = None
+    created_at: datetime | None = None
 
 
 class UserCountOut(CamelModel):

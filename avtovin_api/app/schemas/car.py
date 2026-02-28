@@ -13,7 +13,16 @@ class CarCreate(CamelModel):
     generation: str | None = None
     engine_type: str | None = None
     last_service_at: datetime | None = None
+    last_service_mileage: int | None = None
     photo_url: str | None = None
+
+
+class CarUpdate(CamelModel):
+    mileage: int | None = None
+    last_service_at: datetime | None = None
+    last_service_mileage: int | None = None
+    photo_url: str | None = None
+    plate_number: str | None = None
 
 
 class CarOut(CamelModel):
@@ -27,6 +36,7 @@ class CarOut(CamelModel):
     generation: str | None = None
     engine_type: str | None = None
     last_service_at: datetime | None = None
+    last_service_mileage: int | None = None
     photo_url: str | None = None
     user_id: str
     created_at: datetime | None = None

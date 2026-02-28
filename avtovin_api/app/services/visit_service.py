@@ -90,7 +90,7 @@ async def _create_simple_visit(
         cashback=cashback,
     ))
 
-    await _finalize_visit(db, car, owner, visit, cashback, cashback_used, mileage)
+    await _finalize_visit(db, car, owner, visit, cashback, cashback_used, mileage, visit_services=None)
     return visit
 
 
@@ -157,7 +157,7 @@ async def _create_service_visit(
         vs.visit_id = visit.id
         db.add(vs)
 
-    await _finalize_visit(db, car, owner, visit, total_cashback, cashback_used, mileage)
+    await _finalize_visit(db, car, owner, visit, total_cashback, cashback_used, mileage, visit_services=visit_services)
     return visit
 
 
@@ -175,11 +175,23 @@ async def _finalize_visit(
     db: AsyncSession,
     car: Car, owner: User, visit: Visit,
     cashback: int, cashback_used: int, mileage: int | None,
+    visit_services: list[VisitService] | None = None,
 ):
-    # Update car
-    car.last_service_at = datetime.now(timezone.utc)
+    # Update mileage (always)
     if mileage:
         car.mileage = mileage
+
+    # Update ТО only if visit includes oil change
+    has_oil_change = False
+    if visit_services:
+        has_oil_change = any(
+            "замена масла" in (vs.service_name or "").lower()
+            for vs in visit_services
+        )
+    if has_oil_change:
+        car.last_service_at = datetime.now(timezone.utc)
+        if mileage:
+            car.last_service_mileage = mileage
 
     # Balance transactions
     if cashback > 0:

@@ -9,7 +9,7 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.car import Car
 from app.models.user import User
-from app.schemas.car import CarCreate, CarOut, VinDecodeOut
+from app.schemas.car import CarCreate, CarUpdate, CarOut, VinDecodeOut
 
 router = APIRouter(prefix="/api/cars", tags=["cars"])
 
@@ -123,6 +123,30 @@ async def decode_vin(vin: str, request: Request):
     await redis.setex(cache_key, 86400, json.dumps(result.model_dump(by_alias=True)))
 
     return result
+
+
+@router.put("/{car_id}", response_model=CarOut)
+async def update_car(
+    car_id: str,
+    body: CarUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Car).where(Car.id == car_id))
+    car = result.scalar_one_or_none()
+    if not car:
+        raise HTTPException(status_code=404, detail="Автомобиль не найден")
+
+    if car.user_id != current_user.id and current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Доступ запрещён")
+
+    update_data = body.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(car, field, value)
+
+    await db.commit()
+    await db.refresh(car)
+    return CarOut.model_validate(car)
 
 
 @router.get("/{car_id}", response_model=CarOut)

@@ -24,6 +24,7 @@ class Car(Base):
     generation: Mapped[str | None] = mapped_column(String, nullable=True)
     engine_type: Mapped[str | None] = mapped_column(String, nullable=True)
     last_service_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    last_service_mileage: Mapped[int | None] = mapped_column(Integer, nullable=True)
     photo_url: Mapped[str | None] = mapped_column(String, nullable=True)
     user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"))
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

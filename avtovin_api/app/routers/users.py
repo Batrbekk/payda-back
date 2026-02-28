@@ -49,10 +49,7 @@ async def list_users(
 
     users_out = []
     for u in users:
-        cars = [
-            CarInfoBrief(id=c.id, brand=c.brand, model=c.model, year=c.year, plate_number=c.plate_number)
-            for c in u.cars
-        ]
+        cars = [CarInfoBrief.model_validate(c) for c in u.cars]
         uo = UserOut(
             id=u.id, phone=u.phone, email=u.email, name=u.name, role=u.role,
             balance=u.balance, fcm_token=u.fcm_token, salon_name=u.salon_name,
