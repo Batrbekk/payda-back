@@ -97,7 +97,9 @@ async def update_user(
     if current_user.id != user_id and current_user.role != "ADMIN":
         raise HTTPException(status_code=403, detail="Доступ запрещён")
 
-    result = await db.execute(select(User).where(User.id == user_id))
+    result = await db.execute(
+        select(User).where(User.id == user_id).options(selectinload(User.cars))
+    )
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
@@ -107,7 +109,7 @@ async def update_user(
         setattr(user, field, value)
 
     await db.commit()
-    await db.refresh(user)
+    await db.refresh(user, attribute_names=["cars"])
     return UserOut.model_validate(user)
 
 
