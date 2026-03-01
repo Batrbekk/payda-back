@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 from app.models.balance import BalanceTransaction
 from app.models.car import Car
 from app.models.service import Service
-from app.models.service_center import ServiceCenter
+from app.models.service_center import ServiceCenter, ServiceCenterService
 from app.models.user import User
 from app.models.visit import Visit, VisitService
 
@@ -114,15 +114,30 @@ async def _create_service_visit(
         if not service:
             continue
 
-        if service.commission_type == "percent":
-            commission = round(price * service.commission_value / 100)
-        else:
-            commission = int(service.commission_value)
+        # Check for SC-level override
+        scs_result = await db.execute(
+            select(ServiceCenterService).where(
+                ServiceCenterService.service_center_id == sc.id,
+                ServiceCenterService.service_id == service_id,
+            )
+        )
+        scs_override = scs_result.scalar_one_or_none()
 
-        if service.cashback_type == "percent":
-            cashback = round(commission * service.cashback_value / 100)
+        # Commission: use override if set, else catalog default
+        comm_type = (scs_override.commission_type if scs_override and scs_override.commission_type else service.commission_type)
+        comm_value = (scs_override.commission_value if scs_override and scs_override.commission_value is not None else service.commission_value)
+        if comm_type == "percent":
+            commission = round(price * comm_value / 100)
         else:
-            cashback = int(service.cashback_value)
+            commission = int(comm_value)
+
+        # Cashback: use override if set, else catalog default
+        cb_type = (scs_override.cashback_type if scs_override and scs_override.cashback_type else service.cashback_type)
+        cb_value = (scs_override.cashback_value if scs_override and scs_override.cashback_value is not None else service.cashback_value)
+        if cb_type == "percent":
+            cashback = round(commission * cb_value / 100)
+        else:
+            cashback = int(cb_value)
 
         total_cost += price
         total_commission += commission

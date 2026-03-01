@@ -5,6 +5,25 @@ from pydantic import Field
 from app.schemas.base import CamelModel
 
 
+class VisitScBrief(CamelModel):
+    id: str
+    name: str
+    type: str
+
+
+class VisitBrief(CamelModel):
+    id: str
+    description: str | None = None
+    cost: int = 0
+    mileage: int | None = None
+    cashback: int = 0
+    cashback_used: int = 0
+    service_fee: int = 0
+    status: str = "COMPLETED"
+    created_at: datetime | None = None
+    service_center: VisitScBrief | None = None
+
+
 class CarInfoBrief(CamelModel):
     id: str
     brand: str | None = None
@@ -18,6 +37,7 @@ class CarInfoBrief(CamelModel):
     last_service_mileage: int | None = None
     photo_url: str | None = None
     created_at: datetime | None = None
+    visits: list[VisitBrief] = []
 
 
 class UserCountOut(CamelModel):
@@ -58,6 +78,8 @@ class FcmTokenRequest(CamelModel):
 
 class BalanceOut(CamelModel):
     balance: int
+    total_earned: int = 0
+    total_spent: int = 0
     transactions: list["TransactionOut"]
     total: int
     page: int

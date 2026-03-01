@@ -43,6 +43,8 @@ class ServiceBrief(CamelModel):
     id: str
     name: str
     category: str
+    cashback_type: str | None = None
+    cashback_value: float | None = None
 
 
 class ScServiceDetail(CamelModel):
@@ -51,6 +53,10 @@ class ScServiceDetail(CamelModel):
     service_id: str
     price: int | None = None
     is_flex_price: bool = False
+    commission_type: str | None = None
+    commission_value: float | None = None
+    cashback_type: str | None = None
+    cashback_value: float | None = None
     service: ServiceBrief | None = None
 
 

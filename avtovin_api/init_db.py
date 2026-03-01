@@ -29,6 +29,10 @@ async def run_migrations():
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR",
         "UPDATE landing_partners SET address = REGEXP_REPLACE(address, '^ул\\.\\s*', '') WHERE address LIKE 'ул.%'",
         "ALTER TABLE cars ADD COLUMN IF NOT EXISTS last_service_mileage INTEGER",
+        "ALTER TABLE service_center_services ADD COLUMN IF NOT EXISTS commission_type VARCHAR",
+        "ALTER TABLE service_center_services ADD COLUMN IF NOT EXISTS commission_value INTEGER",
+        "ALTER TABLE service_center_services ADD COLUMN IF NOT EXISTS cashback_type VARCHAR",
+        "ALTER TABLE service_center_services ADD COLUMN IF NOT EXISTS cashback_value INTEGER",
     ]
     async with engine.begin() as conn:
         for sql in migrations:

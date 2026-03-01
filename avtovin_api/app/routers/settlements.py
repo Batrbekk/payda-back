@@ -79,7 +79,7 @@ async def create_settlements(
             period_end=body.period_end,
             total_commission=total_commission,
             total_cashback_redeemed=total_cashback,
-            net_amount=total_commission,
+            net_amount=total_commission - total_cashback,
         )
         db.add(settlement)
         created.append(settlement)

@@ -30,11 +30,17 @@ def _sc_out(sc: ServiceCenter, visit_count: int = 0) -> ServiceCenterOut:
     for scs in sc.services:
         svc_brief = None
         if scs.service:
-            svc_brief = ServiceBrief(id=scs.service.id, name=scs.service.name, category=scs.service.category)
+            svc_brief = ServiceBrief(
+                id=scs.service.id, name=scs.service.name, category=scs.service.category,
+                cashback_type=scs.service.cashback_type, cashback_value=scs.service.cashback_value,
+            )
         svc_details.append(ScServiceDetail(
             id=scs.id, service_center_id=scs.service_center_id,
             service_id=scs.service_id, price=scs.price,
-            is_flex_price=scs.is_flex_price, service=svc_brief,
+            is_flex_price=scs.is_flex_price,
+            commission_type=scs.commission_type, commission_value=scs.commission_value,
+            cashback_type=scs.cashback_type, cashback_value=scs.cashback_value,
+            service=svc_brief,
         ))
     return ServiceCenterOut(
         **{c.key: getattr(sc, c.key) for c in ServiceCenter.__table__.columns},

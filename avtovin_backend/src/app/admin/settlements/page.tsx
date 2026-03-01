@@ -113,7 +113,7 @@ export default function SettlementsPage() {
 
   const isPdf = (url: string) => url.startsWith("data:application/pdf");
 
-  const totalNet = settlements.reduce((s, r) => s + (r.isPaid ? 0 : r.totalCommission), 0);
+  const totalNet = settlements.reduce((s, r) => s + (r.isPaid ? 0 : r.netAmount), 0);
   const pendingReceipts = settlements.filter((s) => s.receiptStatus === "PENDING").length;
 
   return (
@@ -207,7 +207,7 @@ export default function SettlementsPage() {
                     </td>
                     <td className="px-4 py-3 text-right font-bold">
                       <span className="text-green-600">
-                        {s.totalCommission.toLocaleString()}₸
+                        {s.netAmount.toLocaleString()}₸
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">

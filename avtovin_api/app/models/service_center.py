@@ -61,6 +61,10 @@ class ServiceCenterService(Base):
     service_id: Mapped[str] = mapped_column(String, ForeignKey("services.id", ondelete="CASCADE"))
     price: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_flex_price: Mapped[bool] = mapped_column(Boolean, default=False)
+    commission_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    commission_value: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cashback_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    cashback_value: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     service_center = relationship("ServiceCenter", back_populates="services")
     service = relationship("Service", back_populates="service_center_services")

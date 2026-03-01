@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 
 const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || "avtovin-super-secret-key-change-in-prod"
+  process.env.JWT_SECRET || "change-me-in-production"
 );
 
 export async function signToken(payload: { userId: string; role: string }) {
