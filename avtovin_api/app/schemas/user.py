@@ -61,8 +61,11 @@ class UserOut(CamelModel):
 
 class UserUpdate(CamelModel):
     name: str | None = None
+    phone: str | None = None
     email: str | None = None
+    role: str | None = None
     salon_name: str | None = None
+    balance: int | None = None
 
 
 class UserListOut(CamelModel):
