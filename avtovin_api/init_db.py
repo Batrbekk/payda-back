@@ -33,6 +33,8 @@ async def run_migrations():
         "ALTER TABLE service_center_services ADD COLUMN IF NOT EXISTS commission_value INTEGER",
         "ALTER TABLE service_center_services ADD COLUMN IF NOT EXISTS cashback_type VARCHAR",
         "ALTER TABLE service_center_services ADD COLUMN IF NOT EXISTS cashback_value INTEGER",
+        "ALTER TABLE warranties ADD COLUMN IF NOT EXISTS status VARCHAR DEFAULT 'pending'",
+        "UPDATE warranties SET status = 'approved' WHERE status IS NULL",
     ]
     async with engine.begin() as conn:
         for sql in migrations:

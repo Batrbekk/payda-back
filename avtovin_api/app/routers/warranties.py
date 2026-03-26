@@ -34,10 +34,11 @@ async def list_warranties(
     user_id: str | None = Query(None, alias="userId"),
     search: str | None = None,
     filter: str = "all",
+    status: str | None = Query(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Warranty).options(selectinload(Warranty.user))
+    query = select(Warranty).options(selectinload(Warranty.user), selectinload(Warranty.created_by))
 
     if current_user.role == "USER":
         query = query.where(Warranty.user_id == current_user.id)
@@ -52,6 +53,9 @@ async def list_warranties(
             Warranty.client_name.ilike(f"%{search}%"),
             Warranty.vin.ilike(f"%{search}%"),
         ))
+
+    if status:
+        query = query.where(Warranty.status == status)
 
     now = datetime.utcnow()
     if filter == "active":
@@ -68,6 +72,8 @@ async def list_warranties(
         wo = WarrantyOut.model_validate(w)
         if w.user:
             wo.user = UserBriefForWarranty(phone=w.user.phone, name=w.user.name)
+        if w.created_by:
+            wo.created_by = UserBriefForWarranty(phone=w.created_by.phone, name=w.created_by.name)
         out.append(wo)
     return out
 
