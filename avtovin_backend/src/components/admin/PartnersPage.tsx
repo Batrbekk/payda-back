@@ -460,7 +460,7 @@ export default function PartnersPage({ type }: { type: string }) {
                   <label className="text-xs font-medium text-gray-600 mb-1 block">Процент от чека</label>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-500 mb-0.5 block">Комиссия Payda (%)</label>
+                      <label className="text-xs text-gray-500 mb-0.5 block">Комиссия SRA (%)</label>
                       <input
                         type="number" step="0.1" min="0" max="100"
                         value={form.commissionPercent}
@@ -486,7 +486,7 @@ export default function PartnersPage({ type }: { type: string }) {
                     <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-gray-600">
                       <p>Пример: чек <b>10 000₸</b></p>
                       <p>Скидка клиенту: <b className="text-green-600">{(10000 * parseFloat(form.discountPercent) / 100).toLocaleString()}₸</b> → клиент платит <b>{(10000 - 10000 * parseFloat(form.discountPercent) / 100).toLocaleString()}₸</b></p>
-                      <p>Комиссия Payda: <b className="text-blue-600">{(10000 * parseFloat(form.commissionPercent) / 100).toLocaleString()}₸</b> → партнёр должен нам</p>
+                      <p>Комиссия SRA: <b className="text-blue-600">{(10000 * parseFloat(form.commissionPercent) / 100).toLocaleString()}₸</b> → партнёр должен нам</p>
                     </div>
                   )}
                 </div>

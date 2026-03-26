@@ -22,7 +22,7 @@ async def seed_data(db: AsyncSession = Depends(get_db)):
 
     # Admin
     admin = User(
-        phone="+77777777777", email="admin@payda.kz", name="Админ",
+        phone="+77777777777", email="admin@silkroadauto.kz", name="Админ",
         password=hash_password("admin123"), role="ADMIN",
     )
     db.add(admin)
@@ -69,7 +69,7 @@ async def seed_data(db: AsyncSession = Depends(get_db)):
 
     # Service Centers (5)
     sc_data = [
-        ("Payda Auto Service", "SERVICE_CENTER", "+77011234501", 20, 15),
+        ("SRA Auto Service", "SERVICE_CENTER", "+77011234501", 20, 15),
         ("Quick Oil", "SERVICE_CENTER", "+77011234502", 15, 10),
         ("AutoParts KZ", "AUTO_SHOP", "+77011234503", 10, 5),
         ("Clean Car", "CAR_WASH", "+77011234504", 25, 20),
@@ -105,8 +105,8 @@ async def seed_data(db: AsyncSession = Depends(get_db)):
     for key, value in [
         ("warranty_whatsapp_link", "https://wa.me/77758221235"),
         ("warranty_conditions", "Гарантия действует на оригинальные детали и работы."),
-        ("terms_of_service", "Условия использования приложения Payda."),
-        ("privacy_policy", "Политика конфиденциальности приложения Payda."),
+        ("terms_of_service", "Условия использования приложения SRA."),
+        ("privacy_policy", "Политика конфиденциальности приложения SRA."),
     ]:
         db.add(AppSettings(key=key, value=value))
 

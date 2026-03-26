@@ -43,7 +43,7 @@ export default function WarrantyAdminLayout({ children }: { children: React.Reac
       >
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Payda Гарантии</h1>
+            <h1 className="text-xl font-bold text-gray-900">SRA Гарантии</h1>
             <p className="text-sm text-gray-500">Панель менеджера</p>
           </div>
           <button
@@ -97,7 +97,7 @@ export default function WarrantyAdminLayout({ children }: { children: React.Reac
           >
             <Menu className="h-5 w-5" />
           </button>
-          <h1 className="text-lg font-bold text-gray-900">Payda Гарантии</h1>
+          <h1 className="text-lg font-bold text-gray-900">SRA Гарантии</h1>
         </header>
         <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">{children}</main>
       </div>

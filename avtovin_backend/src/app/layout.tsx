@@ -8,22 +8,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Payda — Гарантийное обслуживание авто в Казахстане",
+  title: "SRA — Гарантийное обслуживание авто в Казахстане",
   description:
     "Гарантия на автомобиль в Казахстане. Оформление через партнёрские сервисные центры. Гарантийное обслуживание, 50+ партнёров в 10+ городах.",
   keywords: [
     "гарантия на авто",
     "гарантийное обслуживание",
     "автострахование",
-    "Payda",
+    "SRA",
     "кешбэк",
     "сервисный центр",
     "ТО",
     "обслуживание авто",
   ],
-  authors: [{ name: "Payda" }],
+  authors: [{ name: "SRA" }],
   openGraph: {
-    title: "Payda — Гарантийное обслуживание авто в Казахстане",
+    title: "SRA — Гарантийное обслуживание авто в Казахстане",
     description:
       "Гарантия на автомобиль. Оформление через партнёрские сервисные центры по всему Казахстану.",
     locale: "ru_KZ",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Payda — Гарантийное обслуживание авто в Казахстане",
+    title: "SRA — Гарантийное обслуживание авто в Казахстане",
     description:
       "Гарантия на автомобиль. Оформление через партнёрские сервисные центры по всему Казахстану.",
   },
@@ -63,12 +63,12 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: "Payda",
+              name: "SRA",
               description:
                 "Гарантийное обслуживание авто с кешбэком в Казахстане. Партнёрские сервисные центры по всей стране.",
               contactPoint: {
                 "@type": "ContactPoint",
-                email: "paydacasco@gmail.com",
+                email: "info@silkroadauto.kz",
                 contactType: "customer service",
                 areaServed: "KZ",
                 availableLanguage: "Russian",

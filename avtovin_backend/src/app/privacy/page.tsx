@@ -8,7 +8,7 @@ export default function PrivacyPage() {
       <header className="bg-[#0A0B2B] py-6 px-5 lg:px-[120px]">
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link href="/">
-            <span className="text-xl font-bold text-white tracking-tight">Payda</span>
+            <span className="text-xl font-bold text-white tracking-tight">SRA</span>
           </Link>
           <Link
             href="/"
@@ -32,8 +32,8 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold mt-8 mb-3">1. Общие положения</h2>
             <p>
               Настоящая Политика конфиденциальности (далее — Политика) действует в отношении
-              всей информации, которую сервис Payda (далее — Сервис) может получить
-              о Пользователе во время использования сайта Payda.
+              всей информации, которую сервис SRA (далее — Сервис) может получить
+              о Пользователе во время использования сайта SRA.
             </p>
           </section>
 
@@ -105,8 +105,8 @@ export default function PrivacyPage() {
             <p>
               По вопросам, связанным с обработкой персональных данных, вы можете
               обратиться по адресу электронной почты:{" "}
-              <a href="mailto:paydacasco@gmail.com" className="text-[#4F56D3] hover:underline">
-                paydacasco@gmail.com
+              <a href="mailto:info@silkroadauto.kz" className="text-[#4F56D3] hover:underline">
+                info@silkroadauto.kz
               </a>{" "}
               или по телефону{" "}
               <a href="tel:+77758221235" className="text-[#4F56D3] hover:underline">
@@ -119,7 +119,7 @@ export default function PrivacyPage() {
 
       <footer className="bg-[#14181F] py-8 px-5 lg:px-[120px]">
         <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-[13px] text-[#8592AD]">&copy; 2026 Payda. Все права защищены.</p>
+          <p className="text-[13px] text-[#8592AD]">&copy; 2026 SRA. Все права защищены.</p>
           <div className="flex gap-6">
             <span className="text-[13px] text-white">Политика конфиденциальности</span>
             <Link href="/terms" className="text-[13px] text-[#8592AD] hover:text-white transition-colors">Условия</Link>

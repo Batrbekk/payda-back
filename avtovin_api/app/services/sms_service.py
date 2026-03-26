@@ -4,7 +4,7 @@ from app.config import settings
 
 
 async def send_sms(phone: str, code: str) -> bool:
-    text = f"Payda: Ваш код подтверждения: {code}"
+    text = f"SRA: Ваш код подтверждения: {code}"
 
     try:
         async with httpx.AsyncClient(timeout=10) as client:

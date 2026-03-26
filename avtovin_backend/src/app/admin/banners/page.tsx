@@ -474,7 +474,7 @@ function PromoModal({ editing, token, nextOrder, onClose, onSaved }: { editing: 
           {actionType !== "none" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{actionType === "url" ? "URL" : "Route"}</label>
-              <input type="text" value={actionValue} onChange={(e) => setActionValue(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" placeholder={actionType === "url" ? "https://payda.kz/promo" : "/history"} />
+              <input type="text" value={actionValue} onChange={(e) => setActionValue(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" placeholder={actionType === "url" ? "https://silkroadauto.kz/promo" : "/history"} />
             </div>
           )}
           <div className="flex gap-4">
@@ -624,7 +624,7 @@ function RaffleDetailPage({ banner, token, onBack }: { banner: Banner; token: st
               onChange={(e) => setNewCondition(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addCondition()}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Пройти ТО у партнёра Payda..."
+              placeholder="Пройти ТО у партнёра SRA..."
             />
             <button onClick={addCondition} className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200">
               Добавить

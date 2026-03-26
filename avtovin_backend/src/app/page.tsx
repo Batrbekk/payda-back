@@ -12,7 +12,7 @@ export default function Home() {
 
       <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-8">
         {/* Logo */}
-        <span className="text-3xl font-bold text-white tracking-tight">Payda</span>
+        <span className="text-3xl font-bold text-white tracking-tight">SRA</span>
 
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2">Панель управления</h1>
@@ -51,7 +51,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <p className="text-[#8592AD]/50 text-xs mt-4">&copy; 2026 Payda</p>
+        <p className="text-[#8592AD]/50 text-xs mt-4">&copy; 2026 SRA</p>
       </div>
     </div>
   );

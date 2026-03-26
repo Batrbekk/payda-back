@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-gray-200 p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Kasko Admin</h1>
+          <h1 className="text-2xl font-bold text-gray-900">SRA Admin</h1>
           <p className="text-gray-500 mt-1">Войдите в панель управления</p>
         </div>
 
@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@payda.kz"
+              placeholder="admin@silkroadauto.kz"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
               required
             />
