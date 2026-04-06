@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     jwt_expire_days: int = 30
     smsc_login: str = "batrbekk"
     smsc_password: str = "Batrbekk031198"
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_verify_sid: str = ""
     firebase_credentials_path: str = ""
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""

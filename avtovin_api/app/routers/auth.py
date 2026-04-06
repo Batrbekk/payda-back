@@ -17,7 +17,7 @@ from app.services.auth_service import (
     generate_otp, create_token, verify_password, hash_password,
     TEST_PHONE,
 )
-from app.services.sms_service import send_sms
+from app.services.sms_service import send_verification, check_verification
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -26,33 +26,29 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 async def send_code(body: SendCodeRequest, db: AsyncSession = Depends(get_db)):
     phone = body.phone
 
-    # Delete old OTP codes for this phone
-    await db.execute(delete(OtpCode).where(OtpCode.phone == phone))
-
-    # Check if test account
+    # Check if test account — keep hardcoded "0000" for testing
     is_test = phone == TEST_PHONE
     if not is_test:
         result = await db.execute(select(User).where(User.phone == phone, User.role == "SC_MANAGER"))
         if result.scalar_one_or_none():
             is_test = True
 
-    # TODO: временно 0000 для всех — убрать после тестирования
-    code = "0000"
+    if is_test:
+        # Test accounts: save OTP "0000" locally, don't call Twilio
+        await db.execute(delete(OtpCode).where(OtpCode.phone == phone))
+        otp = OtpCode(
+            phone=phone,
+            code="0000",
+            expires_at=datetime.utcnow() + timedelta(minutes=5),
+        )
+        db.add(otp)
+        await db.commit()
+        return SendCodeResponse(message="Код отправлен", expires_in=300)
 
-    # Save OTP
-    otp = OtpCode(
-        phone=phone,
-        code=code,
-        expires_at=datetime.utcnow() + timedelta(minutes=5),
-    )
-    db.add(otp)
-    await db.commit()
-
-    # Send SMS — отключено на время тестирования
-    # if not is_test:
-    #     success = await send_sms(phone, code)
-    #     if not success:
-    #         raise HTTPException(status_code=502, detail="Не удалось отправить SMS. Попробуйте позже")
+    # Production: send via Twilio Verify (WhatsApp → SMS fallback)
+    success = send_verification(phone, channel="whatsapp")
+    if not success:
+        raise HTTPException(status_code=502, detail="Не удалось отправить код. Попробуйте позже")
 
     return SendCodeResponse(message="Код отправлен", expires_in=300)
 
@@ -62,26 +58,37 @@ async def verify_code(body: VerifyCodeRequest, db: AsyncSession = Depends(get_db
     if not body.phone or not body.code:
         raise HTTPException(status_code=400, detail="Телефон и код обязательны")
 
-    # Find valid OTP
-    now = datetime.utcnow()
-    result = await db.execute(
-        select(OtpCode)
-        .where(
-            OtpCode.phone == body.phone,
-            OtpCode.code == body.code,
-            OtpCode.verified == False,  # noqa: E712
-            OtpCode.expires_at > now,
-        )
-        .order_by(OtpCode.created_at.desc())
-        .limit(1)
-    )
-    otp = result.scalar_one_or_none()
-    if not otp:
-        raise HTTPException(status_code=401, detail="Неверный или просроченный код")
+    # Check if test account — verify via local OTP table
+    is_test = body.phone == TEST_PHONE
+    if not is_test:
+        result = await db.execute(select(User).where(User.phone == body.phone, User.role == "SC_MANAGER"))
+        if result.scalar_one_or_none():
+            is_test = True
 
-    # Mark OTP as verified
-    otp.verified = True
-    await db.flush()
+    if is_test:
+        # Test accounts: check code from local DB
+        now = datetime.utcnow()
+        result = await db.execute(
+            select(OtpCode)
+            .where(
+                OtpCode.phone == body.phone,
+                OtpCode.code == body.code,
+                OtpCode.verified == False,  # noqa: E712
+                OtpCode.expires_at > now,
+            )
+            .order_by(OtpCode.created_at.desc())
+            .limit(1)
+        )
+        otp = result.scalar_one_or_none()
+        if not otp:
+            raise HTTPException(status_code=401, detail="Неверный или просроченный код")
+        otp.verified = True
+        await db.flush()
+    else:
+        # Production: verify via Twilio
+        valid = check_verification(body.phone, body.code)
+        if not valid:
+            raise HTTPException(status_code=401, detail="Неверный или просроченный код")
 
     # Find or create user
     result = await db.execute(
