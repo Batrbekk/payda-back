@@ -12,8 +12,8 @@ def _get_client() -> Client:
     return _client
 
 
-def send_verification(phone: str, channel: str = "whatsapp") -> bool:
-    """Send OTP via Twilio Verify. Channel: 'whatsapp' or 'sms'."""
+def send_verification(phone: str, channel: str = "sms") -> bool:
+    """Send OTP via Twilio Verify. Channel: 'sms' or 'whatsapp'."""
     try:
         client = _get_client()
         verification = client.verify.v2.services(
@@ -24,10 +24,7 @@ def send_verification(phone: str, channel: str = "whatsapp") -> bool:
         )
         return verification.status == "pending"
     except Exception as e:
-        print(f"Twilio send error: {e}")
-        # Fallback to SMS if WhatsApp fails
-        if channel == "whatsapp":
-            return send_verification(phone, channel="sms")
+        print(f"Twilio send error ({channel}): {e}")
         return False
 
 

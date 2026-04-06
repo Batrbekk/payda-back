@@ -45,8 +45,8 @@ async def send_code(body: SendCodeRequest, db: AsyncSession = Depends(get_db)):
         await db.commit()
         return SendCodeResponse(message="Код отправлен", expires_in=300)
 
-    # Production: send via Twilio Verify (WhatsApp → SMS fallback)
-    success = send_verification(phone, channel="whatsapp")
+    # Production: send via Twilio Verify SMS
+    success = send_verification(phone, channel="sms")
     if not success:
         raise HTTPException(status_code=502, detail="Не удалось отправить код. Попробуйте позже")
 
