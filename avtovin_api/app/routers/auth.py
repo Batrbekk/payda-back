@@ -34,11 +34,11 @@ async def send_code(body: SendCodeRequest, db: AsyncSession = Depends(get_db)):
             is_test = True
 
     if is_test:
-        # Test accounts: save OTP "0000" locally, don't call Twilio
+        # Test accounts: save OTP "000000" locally, don't call Twilio
         await db.execute(delete(OtpCode).where(OtpCode.phone == phone))
         otp = OtpCode(
             phone=phone,
-            code="0000",
+            code="000000",
             expires_at=datetime.utcnow() + timedelta(minutes=5),
         )
         db.add(otp)
