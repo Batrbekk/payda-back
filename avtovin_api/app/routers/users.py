@@ -172,6 +172,17 @@ async def delete_user(
     return {"message": "Пользователь удалён"}
 
 
+@router.delete("/me")
+async def delete_my_account(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete current user's account and all related data."""
+    await db.delete(current_user)
+    await db.commit()
+    return {"message": "Аккаунт удалён"}
+
+
 @router.get("/{user_id}/balance", response_model=BalanceOut)
 async def get_balance(
     user_id: str,
