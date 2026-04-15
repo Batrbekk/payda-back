@@ -125,13 +125,19 @@ async def create_warranty(
 
         user_id = user.id
 
-        car = Car(
-            user_id=user_id, brand=body.brand, model=body.model,
-            year=body.year, plate_number=body.plate_number,
-            vin=body.vin,
+        # Check if car already exists for this user
+        existing_car = await db.execute(
+            select(Car).where(Car.user_id == user_id, Car.plate_number == body.plate_number)
         )
-        db.add(car)
-        await db.flush()
+        car = existing_car.scalar_one_or_none()
+        if not car:
+            car = Car(
+                user_id=user_id, brand=body.brand, model=body.model,
+                year=body.year, plate_number=body.plate_number,
+                vin=body.vin,
+            )
+            db.add(car)
+            await db.flush()
         car_id = car.id
 
     elif not user_id or not car_id:
