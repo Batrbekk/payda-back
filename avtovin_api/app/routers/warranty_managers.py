@@ -99,10 +99,26 @@ async def update_warranty_manager(
     elif "password" in data:
         del data["password"]
 
+    # Check phone uniqueness (exclude current manager)
+    if "phone" in data and data["phone"] != manager.phone:
+        dup = await db.execute(select(User).where(User.phone == data["phone"]))
+        if dup.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail="Пользователь с таким телефоном уже существует")
+
+    # Check email uniqueness (exclude current manager)
+    if "email" in data and data["email"] != manager.email:
+        dup = await db.execute(select(User).where(User.email == data["email"]))
+        if dup.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail="Пользователь с таким email уже существует")
+
     for field, value in data.items():
         setattr(manager, field, value)
 
-    await db.commit()
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail="Ошибка сохранения")
     await db.refresh(manager)
     return WarrantyManagerOut(
         id=manager.id, phone=manager.phone, email=manager.email,
