@@ -158,7 +158,11 @@ async def update_user(
         setattr(user, field, value)
 
     await db.commit()
-    await db.refresh(user, attribute_names=["cars"])
+    # Re-query to refresh all columns (commit expired them) and keep cars loaded
+    result = await db.execute(
+        select(User).where(User.id == user_id).options(selectinload(User.cars))
+    )
+    user = result.scalar_one()
     return UserOut.model_validate(user)
 
 
