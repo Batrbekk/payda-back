@@ -30,9 +30,22 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Защищаем sc-admin — SC_MANAGER или ADMIN
+  if (pathname.startsWith("/sc-admin") && pathname !== "/sc-admin/login") {
+    const token = req.cookies.get("sc_token")?.value;
+    if (!token) {
+      return NextResponse.redirect(new URL("/sc-admin/login", req.url));
+    }
+
+    const payload = await verifyToken(token);
+    if (!payload || !["ADMIN", "SC_MANAGER"].includes(payload.role)) {
+      return NextResponse.redirect(new URL("/sc-admin/login", req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/warranty-admin/:path*"],
+  matcher: ["/admin/:path*", "/warranty-admin/:path*", "/sc-admin/:path*"],
 };

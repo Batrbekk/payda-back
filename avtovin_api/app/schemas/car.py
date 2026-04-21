@@ -43,6 +43,24 @@ class CarOut(CamelModel):
     updated_at: datetime | None = None
 
 
+class CarOwnerBrief(CamelModel):
+    id: str
+    phone: str
+    name: str | None = None
+
+
+class CarByVinOut(CamelModel):
+    id: str
+    vin: str | None = None
+    brand: str
+    model: str
+    year: int
+    plate_number: str
+    mileage: int | None = None
+    has_active_warranty: bool = False
+    owner: CarOwnerBrief
+
+
 class VinDecodeOut(CamelModel):
     vin: str
     brand: str | None = None

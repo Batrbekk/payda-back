@@ -1,4 +1,6 @@
 import math
+import re
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import select, func
@@ -11,6 +13,7 @@ from app.models.car import Car
 from app.models.service_center import ServiceCenter
 from app.models.user import User
 from app.models.visit import Visit
+from app.models.warranty import Warranty
 from app.schemas.visit import (
     VisitOut, VisitCreate, VisitListOut, VisitServiceOut,
     CarBriefForVisit, UserBriefForVisit, ScBriefForVisit,
@@ -48,6 +51,7 @@ async def list_visits(
     limit: int = Query(20, ge=1, le=100),
     car_id: str | None = Query(None, alias="carId"),
     service_center_id: str | None = Query(None, alias="serviceCenterId"),
+    warranty: str | None = Query(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -72,6 +76,20 @@ async def list_visits(
         query = query.where(Visit.service_center_id == service_center_id)
         count_query = count_query.where(Visit.service_center_id == service_center_id)
 
+    # Filter by whether the visited car has an active warranty
+    if warranty in ("true", "false"):
+        now = datetime.utcnow()
+        warranty_cars_q = select(Warranty.car_id).where(
+            Warranty.is_active == True,  # noqa: E712
+            Warranty.end_date >= now,
+        )
+        if warranty == "true":
+            query = query.where(Visit.car_id.in_(warranty_cars_q))
+            count_query = count_query.where(Visit.car_id.in_(warranty_cars_q))
+        else:
+            query = query.where(Visit.car_id.notin_(warranty_cars_q))
+            count_query = count_query.where(Visit.car_id.notin_(warranty_cars_q))
+
     total = (await db.execute(count_query)).scalar() or 0
     total_pages = math.ceil(total / limit) if total else 1
 
@@ -94,13 +112,61 @@ async def create_visit_endpoint(
     current_user: User = Depends(require_sc_manager),
     db: AsyncSession = Depends(get_db),
 ):
-    if not body.car_id or not body.service_center_id:
-        raise HTTPException(status_code=400, detail="carId и serviceCenterId обязательны")
+    if not body.service_center_id:
+        raise HTTPException(status_code=400, detail="serviceCenterId обязателен")
+
+    car_id = body.car_id
+
+    # Quick-create by VIN: resolve existing car or create user+car
+    if not car_id and body.vin:
+        vin_upper = body.vin.upper().strip()
+        result = await db.execute(
+            select(Car).where(Car.vin == vin_upper).order_by(Car.created_at.desc()).limit(1)
+        )
+        existing_car = result.scalar_one_or_none()
+        if existing_car:
+            car_id = existing_car.id
+        else:
+            # New client: need phone + car data
+            if not body.phone or not body.brand or not body.model or not body.year or not body.plate_number:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Авто не найдено по VIN. Заполните телефон, марку, модель, год и гос.номер для создания новой записи",
+                )
+            if not re.match(r"^\+7\d{10}$", body.phone):
+                raise HTTPException(status_code=400, detail="Неверный формат телефона")
+
+            user_result = await db.execute(select(User).where(User.phone == body.phone))
+            user = user_result.scalar_one_or_none()
+            if not user:
+                user = User(phone=body.phone, name=body.client_name)
+                db.add(user)
+                await db.flush()
+
+            plate_car_result = await db.execute(
+                select(Car).where(Car.user_id == user.id, Car.plate_number == body.plate_number)
+            )
+            plate_car = plate_car_result.scalar_one_or_none()
+            if plate_car:
+                car_id = plate_car.id
+                if not plate_car.vin:
+                    plate_car.vin = vin_upper
+            else:
+                new_car = Car(
+                    user_id=user.id, brand=body.brand, model=body.model,
+                    year=body.year, plate_number=body.plate_number, vin=vin_upper,
+                )
+                db.add(new_car)
+                await db.flush()
+                car_id = new_car.id
+
+    if not car_id:
+        raise HTTPException(status_code=400, detail="Укажите carId или VIN")
 
     try:
         visit = await create_visit(
             db=db,
-            car_id=body.car_id,
+            car_id=car_id,
             service_center_id=body.service_center_id,
             services_in=body.services,
             cashback_used=body.cashback_used,

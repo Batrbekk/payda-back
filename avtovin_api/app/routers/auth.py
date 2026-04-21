@@ -176,3 +176,29 @@ async def warranty_login(body: AdminLoginRequest, db: AsyncSession = Depends(get
         token=token,
         user=AdminUserBrief(id=user.id, name=user.name, email=user.email, role=user.role),
     )
+
+
+@router.post("/sc-login", response_model=AdminLoginResponse)
+async def sc_login(body: AdminLoginRequest, db: AsyncSession = Depends(get_db)):
+    if not body.email or not body.password:
+        raise HTTPException(status_code=400, detail="Введите email и пароль")
+
+    result = await db.execute(select(User).where(User.email == body.email))
+    user = result.scalar_one_or_none()
+
+    if not user or user.role not in ("SC_MANAGER", "ADMIN") or not user.password:
+        raise HTTPException(status_code=401, detail="Неверный email или пароль")
+
+    if not verify_password(body.password, user.password):
+        raise HTTPException(status_code=401, detail="Неверный email или пароль")
+
+    if not user.password.startswith("$2"):
+        user.password = hash_password(body.password)
+        await db.commit()
+
+    token = create_token(user.id, user.role)
+
+    return AdminLoginResponse(
+        token=token,
+        user=AdminUserBrief(id=user.id, name=user.name, email=user.email, role=user.role),
+    )

@@ -148,6 +148,12 @@ async def update_user(
         raise HTTPException(status_code=404, detail="Пользователь не найден")
 
     update_data = body.model_dump(exclude_unset=True)
+    if "password" in update_data:
+        if update_data["password"]:
+            from app.services.auth_service import hash_password
+            update_data["password"] = hash_password(update_data["password"])
+        else:
+            del update_data["password"]
     for field, value in update_data.items():
         setattr(user, field, value)
 

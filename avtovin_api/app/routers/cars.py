@@ -5,11 +5,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from datetime import datetime
+
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, require_sc_manager
 from app.models.car import Car
 from app.models.user import User
-from app.schemas.car import CarCreate, CarUpdate, CarOut, VinDecodeOut
+from app.models.warranty import Warranty
+from app.schemas.car import CarCreate, CarUpdate, CarOut, CarByVinOut, CarOwnerBrief, VinDecodeOut
 
 router = APIRouter(prefix="/api/cars", tags=["cars"])
 
@@ -62,6 +65,44 @@ async def create_car(
     await db.commit()
     await db.refresh(car)
     return CarOut.model_validate(car)
+
+
+@router.get("/by-vin", response_model=CarByVinOut)
+async def find_car_by_vin(
+    vin: str = Query(..., min_length=11),
+    _user: User = Depends(require_sc_manager),
+    db: AsyncSession = Depends(get_db),
+):
+    """Look up existing car by VIN (for SC admin quick-create flow)."""
+    vin_upper = vin.upper().strip()
+    result = await db.execute(
+        select(Car).where(Car.vin == vin_upper).order_by(Car.created_at.desc()).limit(1)
+    )
+    car = result.scalar_one_or_none()
+    if not car:
+        raise HTTPException(status_code=404, detail="Авто с таким VIN не найдено")
+
+    owner_result = await db.execute(select(User).where(User.id == car.user_id))
+    owner = owner_result.scalar_one_or_none()
+    if not owner:
+        raise HTTPException(status_code=404, detail="Владелец не найден")
+
+    now = datetime.utcnow()
+    warr_result = await db.execute(
+        select(Warranty).where(
+            Warranty.car_id == car.id,
+            Warranty.is_active == True,  # noqa: E712
+            Warranty.end_date >= now,
+        ).limit(1)
+    )
+    has_warranty = warr_result.scalar_one_or_none() is not None
+
+    return CarByVinOut(
+        id=car.id, vin=car.vin, brand=car.brand, model=car.model, year=car.year,
+        plate_number=car.plate_number, mileage=car.mileage,
+        has_active_warranty=has_warranty,
+        owner=CarOwnerBrief(id=owner.id, phone=owner.phone, name=owner.name),
+    )
 
 
 @router.get("/decode-vin/{vin}", response_model=VinDecodeOut)

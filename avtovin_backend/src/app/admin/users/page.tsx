@@ -56,7 +56,7 @@ export default function AdminUsersPage() {
 
   // Edit modal
   const [editUser, setEditUser] = useState<User | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", role: "", salonName: "", balance: 0 });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", password: "", role: "", salonName: "", balance: 0 });
   const [editLoading, setEditLoading] = useState(false);
 
   // Delete modal
@@ -94,6 +94,7 @@ export default function AdminUsersPage() {
       name: user.name || "",
       phone: user.phone || "",
       email: user.email || "",
+      password: "",
       role: user.role,
       salonName: user.salonName || "",
       balance: user.balance || 0,
@@ -112,6 +113,7 @@ export default function AdminUsersPage() {
           name: editForm.name || null,
           phone: editForm.phone || null,
           email: editForm.email || null,
+          ...(editForm.password ? { password: editForm.password } : {}),
           role: editForm.role,
           salonName: editForm.salonName || null,
           balance: editForm.balance,
@@ -367,6 +369,19 @@ export default function AdminUsersPage() {
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none text-sm"
                   placeholder="email@example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Пароль <span className="text-xs text-gray-400 font-normal">(оставьте пустым, чтобы не менять)</span>
+                </label>
+                <input
+                  type="text"
+                  value={editForm.password}
+                  onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none text-sm"
+                  placeholder="Новый пароль"
+                  autoComplete="new-password"
                 />
               </div>
               <div>

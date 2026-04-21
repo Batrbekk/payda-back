@@ -10,13 +10,21 @@ class VisitServiceIn(CamelModel):
 
 
 class VisitCreate(CamelModel):
-    car_id: str
+    car_id: str | None = None
     service_center_id: str
     services: list[VisitServiceIn] | None = None
     cashback_used: int = 0
     mileage: int | None = None
     total_amount: int | None = None
     description: str | None = None
+    # Quick-create by VIN: either resolves existing car or creates new user+car
+    vin: str | None = None
+    phone: str | None = None
+    client_name: str | None = None
+    brand: str | None = None
+    model: str | None = None
+    year: int | None = None
+    plate_number: str | None = None
 
 
 class VisitServiceOut(CamelModel):

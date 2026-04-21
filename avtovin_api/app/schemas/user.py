@@ -63,6 +63,7 @@ class UserUpdate(CamelModel):
     name: str | None = None
     phone: str | None = None
     email: str | None = None
+    password: str | None = None
     role: str | None = None
     salon_name: str | None = None
     balance: int | None = None
