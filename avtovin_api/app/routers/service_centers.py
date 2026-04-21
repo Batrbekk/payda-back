@@ -245,10 +245,33 @@ async def get_my_finances(
     settlements = settlements_result.scalars().all()
 
     unpaid = sum(s.total_commission for s in settlements if not s.is_paid)
-    # Add current month if not covered
+    # Add current month if not covered by a settlement
     covered = any(s.period_start >= month_start for s in settlements)
     if not covered:
         unpaid += month_total
+
+    # Build settlements list
+    settlement_items = [
+        SettlementBriefOut(
+            id=s.id,
+            period=f"{MONTH_NAMES[s.period_start.month]} {s.period_start.year}",
+            amount=s.total_commission,
+            is_paid=s.is_paid,
+            period_start=s.period_start,
+            period_end=s.period_end,
+        )
+        for s in settlements
+    ]
+    # Add current month as virtual settlement if not covered and has visits
+    if not covered and month_total > 0:
+        settlement_items.insert(0, SettlementBriefOut(
+            id="current",
+            period=month_name,
+            amount=month_total,
+            is_paid=False,
+            period_start=month_start,
+            period_end=now,
+        ))
 
     return FinancesOut(
         unpaid_amount=unpaid,
@@ -256,17 +279,7 @@ async def get_my_finances(
             name=month_name, total=month_total,
             visit_count=len(visits), visits=visit_items,
         ),
-        settlements=[
-            SettlementBriefOut(
-                id=s.id,
-                period=f"{MONTH_NAMES[s.period_start.month]} {s.period_start.year}",
-                amount=s.total_commission,
-                is_paid=s.is_paid,
-                period_start=s.period_start,
-                period_end=s.period_end,
-            )
-            for s in settlements
-        ],
+        settlements=settlement_items,
     )
 
 
@@ -478,10 +491,11 @@ async def get_sc_services(
             category=scs.service.category,
             price=scs.price,
             is_flex_price=scs.is_flex_price,
-            commission_type=scs.service.commission_type,
-            commission_value=scs.service.commission_value,
-            cashback_type=scs.service.cashback_type,
-            cashback_value=scs.service.cashback_value,
+            # Prefer SC-level overrides; fall back to catalog defaults
+            commission_type=scs.commission_type or scs.service.commission_type,
+            commission_value=scs.commission_value if scs.commission_value is not None else scs.service.commission_value,
+            cashback_type=scs.cashback_type or scs.service.cashback_type,
+            cashback_value=scs.cashback_value if scs.cashback_value is not None else scs.service.cashback_value,
         )
         for scs in sc_services
     ]

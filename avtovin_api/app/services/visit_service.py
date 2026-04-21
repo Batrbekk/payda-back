@@ -131,11 +131,13 @@ async def _create_service_visit(
         else:
             commission = int(comm_value)
 
-        # Cashback: use override if set, else catalog default
+        # Cashback: use override if set, else catalog default.
+        # Percent is applied to the service price (not to commission), so 0% commission
+        # can coexist with non-zero cashback (SC pays the cashback itself).
         cb_type = (scs_override.cashback_type if scs_override and scs_override.cashback_type else service.cashback_type)
         cb_value = (scs_override.cashback_value if scs_override and scs_override.cashback_value is not None else service.cashback_value)
         if cb_type == "percent":
-            cashback = round(commission * cb_value / 100)
+            cashback = round(price * cb_value / 100)
         else:
             cashback = int(cb_value)
 
