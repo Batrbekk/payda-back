@@ -1,6 +1,6 @@
 {
   "Toyota": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/176_toyota.png",
+    "icon": "/uploads/brand-logos/176_toyota.png",
     "models": [
       "4Runner",
       "Agya",
@@ -182,7 +182,7 @@
     ]
   },
   "ВАЗ (Lada)": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/215_vaz.png",
+    "icon": "/uploads/brand-logos/215_vaz.png",
     "models": [
       "1111 Ока",
       "2101",
@@ -220,7 +220,7 @@
     ]
   },
   "Hyundai": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/79_hyundai.png",
+    "icon": "/uploads/brand-logos/79_hyundai.png",
     "models": [
       "Accent",
       "Aslan",
@@ -297,7 +297,7 @@
     ]
   },
   "Mercedes-Benz": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/116_mercedes-benz.png",
+    "icon": "/uploads/brand-logos/116_mercedes-benz.png",
     "models": [
       "190",
       "A-Класс",
@@ -348,7 +348,7 @@
     ]
   },
   "Kia": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/92_kia_new.png",
+    "icon": "/uploads/brand-logos/92_kia_new.png",
     "models": [
       "Avella",
       "Besta",
@@ -421,7 +421,7 @@
     ]
   },
   "Volkswagen": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/184_volkswagen.png",
+    "icon": "/uploads/brand-logos/184_volkswagen.png",
     "models": [
       "Amarok",
       "Arteon",
@@ -485,7 +485,7 @@
     ]
   },
   "BMW": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/18_bmw.png",
+    "icon": "/uploads/brand-logos/18_bmw.png",
     "models": [
       "1 серия",
       "1M",
@@ -532,7 +532,7 @@
     ]
   },
   "Nissan": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/127_nissan.png",
+    "icon": "/uploads/brand-logos/127_nissan.png",
     "models": [
       "100NX",
       "180SX",
@@ -638,7 +638,7 @@
     ]
   },
   "Mitsubishi": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/123_mitsubishi.png",
+    "icon": "/uploads/brand-logos/123_mitsubishi.png",
     "models": [
       "3000 GT",
       "ASX",
@@ -710,7 +710,7 @@
     ]
   },
   "Lexus": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/99_lexus.png",
+    "icon": "/uploads/brand-logos/99_lexus.png",
     "models": [
       "CT",
       "ES",
@@ -733,7 +733,7 @@
     ]
   },
   "Audi": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/10_audi.png",
+    "icon": "/uploads/brand-logos/10_audi.png",
     "models": [
       "100",
       "200",
@@ -795,7 +795,7 @@
     ]
   },
   "Chevrolet": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/35_chevrolet.png",
+    "icon": "/uploads/brand-logos/35_chevrolet.png",
     "models": [
       "Alero",
       "Astro",
@@ -872,7 +872,7 @@
     ]
   },
   "Subaru": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/166_subaru.png",
+    "icon": "/uploads/brand-logos/166_subaru.png",
     "models": [
       "Ascent",
       "BRZ",
@@ -905,7 +905,7 @@
     ]
   },
   "ГАЗ": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/216_gaz.png",
+    "icon": "/uploads/brand-logos/216_gaz.png",
     "models": [
       "12 ЗиМ",
       "13 (Чайка)",
@@ -933,7 +933,7 @@
     ]
   },
   "Daewoo": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/42_daewoo.png",
+    "icon": "/uploads/brand-logos/42_daewoo.png",
     "models": [
       "Alpheon",
       "Arcadia",
@@ -971,7 +971,7 @@
     ]
   },
   "Mazda": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/113_mazda.png",
+    "icon": "/uploads/brand-logos/113_mazda.png",
     "models": [
       "121",
       "2",
@@ -1038,7 +1038,7 @@
     ]
   },
   "Honda": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/76_honda.png",
+    "icon": "/uploads/brand-logos/76_honda.png",
     "models": [
       "Accord",
       "Acty",
@@ -1118,7 +1118,7 @@
     ]
   },
   "Opel": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/130_opel.png",
+    "icon": "/uploads/brand-logos/130_opel.png",
     "models": [
       "Adam",
       "Agila",
@@ -1160,7 +1160,7 @@
     ]
   },
   "Changan": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/32_changan.png",
+    "icon": "/uploads/brand-logos/32_changan.png",
     "models": [
       "Alsvin",
       "Auchan A600 EV",
@@ -1214,7 +1214,7 @@
     ]
   },
   "Renault": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/147_renault.png",
+    "icon": "/uploads/brand-logos/147_renault.png",
     "models": [
       "11",
       "12",
@@ -1270,7 +1270,7 @@
     ]
   },
   "Ford": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/63_ford.png",
+    "icon": "/uploads/brand-logos/63_ford.png",
     "models": [
       "Aerostar",
       "Aspire",
@@ -1344,7 +1344,7 @@
     ]
   },
   "Skoda": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/159_skoda_new.png",
+    "icon": "/uploads/brand-logos/159_skoda_new.png",
     "models": [
       "Citigo",
       "Enyaq",
@@ -1364,7 +1364,7 @@
     ]
   },
   "BYD": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/26_byd.png",
+    "icon": "/uploads/brand-logos/26_byd.png",
     "models": [
       "BYD Qin L EV",
       "Chazor",
@@ -1426,7 +1426,7 @@
     ]
   },
   "Land Rover": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/97_land-rover.png",
+    "icon": "/uploads/brand-logos/97_land-rover.png",
     "models": [
       "Defender",
       "Discovery",
@@ -1439,7 +1439,7 @@
     ]
   },
   "Geely": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/67_geely.png",
+    "icon": "/uploads/brand-logos/67_geely.png",
     "models": [
       "Atlas",
       "Azkarra",
@@ -1478,7 +1478,7 @@
     ]
   },
   "Chery": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/34_chery.png",
+    "icon": "/uploads/brand-logos/34_chery.png",
     "models": [
       "A3",
       "Amulet",
@@ -1530,7 +1530,7 @@
     ]
   },
   "Li": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4233_li.png",
+    "icon": "/uploads/brand-logos/4233_li.png",
     "models": [
       "L6",
       "L7",
@@ -1543,7 +1543,7 @@
     ]
   },
   "Infiniti": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/80_infiniti.png",
+    "icon": "/uploads/brand-logos/80_infiniti.png",
     "models": [
       "EX-Series",
       "FX-Series",
@@ -1569,7 +1569,7 @@
     ]
   },
   "JAC": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/87_jac.png",
+    "icon": "/uploads/brand-logos/87_jac.png",
     "models": [
       "E-J7",
       "E30X",
@@ -1610,7 +1610,7 @@
     ]
   },
   "УАЗ": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/227_uaz.png",
+    "icon": "/uploads/brand-logos/227_uaz.png",
     "models": [
       "3151",
       "3153",
@@ -1628,7 +1628,7 @@
     ]
   },
   "Deepal": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4472_deepal.png",
+    "icon": "/uploads/brand-logos/4472_deepal.png",
     "models": [
       "G318",
       "L07",
@@ -1639,7 +1639,7 @@
     ]
   },
   "Haval": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/290_haval.png",
+    "icon": "/uploads/brand-logos/290_haval.png",
     "models": [
       "Chitu",
       "Dargo",
@@ -1663,7 +1663,7 @@
     ]
   },
   "Suzuki": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/167_suzuki.png",
+    "icon": "/uploads/brand-logos/167_suzuki.png",
     "models": [
       "Aerio",
       "Alto",
@@ -1706,7 +1706,7 @@
     ]
   },
   "Porsche": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/139_porsche.png",
+    "icon": "/uploads/brand-logos/139_porsche.png",
     "models": [
       "911",
       "918",
@@ -1725,7 +1725,7 @@
     ]
   },
   "Jetour": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4231_jetour.png",
+    "icon": "/uploads/brand-logos/4231_jetour.png",
     "models": [
       "Dashing",
       "G700",
@@ -1745,7 +1745,7 @@
     ]
   },
   "Ravon": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/3689_ravon.png",
+    "icon": "/uploads/brand-logos/3689_ravon.png",
     "models": [
       "Gentra",
       "Matiz",
@@ -1755,7 +1755,7 @@
     ]
   },
   "Zeekr": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4239_zeekr.png",
+    "icon": "/uploads/brand-logos/4239_zeekr.png",
     "models": [
       "001",
       "007",
@@ -1768,7 +1768,7 @@
     ]
   },
   "SsangYong": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/165_ssang-yong.png",
+    "icon": "/uploads/brand-logos/165_ssang-yong.png",
     "models": [
       "Actyon",
       "Actyon Sports",
@@ -1787,7 +1787,7 @@
     ]
   },
   "Peugeot": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/135_peugeot.png",
+    "icon": "/uploads/brand-logos/135_peugeot.png",
     "models": [
       "1007",
       "106",
@@ -1830,7 +1830,7 @@
     ]
   },
   "Cadillac": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/28_cadillac.png",
+    "icon": "/uploads/brand-logos/28_cadillac.png",
     "models": [
       "ATS",
       "Allante",
@@ -1861,7 +1861,7 @@
     ]
   },
   "Jeep": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/89_jeep.png",
+    "icon": "/uploads/brand-logos/89_jeep.png",
     "models": [
       "CJ",
       "Cherokee",
@@ -1879,7 +1879,7 @@
     ]
   },
   "FAW": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/59_faw.png",
+    "icon": "/uploads/brand-logos/59_faw.png",
     "models": [
       "1010",
       "1021",
@@ -1913,7 +1913,7 @@
     ]
   },
   "GAC": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4188_gac.png",
+    "icon": "/uploads/brand-logos/4188_gac.png",
     "models": [
       "Aion Hyper GT",
       "Aion LX",
@@ -1937,7 +1937,7 @@
     ]
   },
   "Lifan": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/101_lifan.png",
+    "icon": "/uploads/brand-logos/101_lifan.png",
     "models": [
       "Breez",
       "Cebrium",
@@ -1954,7 +1954,7 @@
     ]
   },
   "ЗАЗ": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/217_zaz.png",
+    "icon": "/uploads/brand-logos/217_zaz.png",
     "models": [
       "1102 (Таврия)",
       "1103 (Славута)",
@@ -1969,7 +1969,7 @@
     ]
   },
   "EXEED": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4225_exeed.png",
+    "icon": "/uploads/brand-logos/4225_exeed.png",
     "models": [
       "Exlantix ET",
       "LX",
@@ -1980,7 +1980,7 @@
     ]
   },
   "Hongqi": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4229_hongqi.png",
+    "icon": "/uploads/brand-logos/4229_hongqi.png",
     "models": [
       "E-HS3",
       "E-HS9",
@@ -1995,7 +1995,7 @@
     ]
   },
   "Dodge": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/51_dodge.png",
+    "icon": "/uploads/brand-logos/51_dodge.png",
     "models": [
       "Avenger",
       "Caliber",
@@ -2024,7 +2024,7 @@
     ]
   },
   "Chrysler": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/36_chrysler.png",
+    "icon": "/uploads/brand-logos/36_chrysler.png",
     "models": [
       "200",
       "300C",
@@ -2053,7 +2053,7 @@
     ]
   },
   "Volvo": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/185_volvo_new.png",
+    "icon": "/uploads/brand-logos/185_volvo_new.png",
     "models": [
       "200 Series",
       "300 Series",
@@ -2086,7 +2086,7 @@
     ]
   },
   "Tank": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4259_tank.png",
+    "icon": "/uploads/brand-logos/4259_tank.png",
     "models": [
       "300",
       "400",
@@ -2101,7 +2101,7 @@
     ]
   },
   "OMODA": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4308_omoda.png",
+    "icon": "/uploads/brand-logos/4308_omoda.png",
     "models": [
       "C5",
       "C7",
@@ -2109,7 +2109,7 @@
     ]
   },
   "Tesla": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/172_tesla.png",
+    "icon": "/uploads/brand-logos/172_tesla.png",
     "models": [
       "Cybertruck",
       "Model 3",
@@ -2120,7 +2120,7 @@
     ]
   },
   "Genesis": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/3815_genesis.png",
+    "icon": "/uploads/brand-logos/3815_genesis.png",
     "models": [
       "G70",
       "G80",
@@ -2132,7 +2132,7 @@
     ]
   },
   "Lynk & Co": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4300_lynk_&_co.png",
+    "icon": "/uploads/brand-logos/4300_lynk_&_co.png",
     "models": [
       "01",
       "03",
@@ -2147,21 +2147,21 @@
     ]
   },
   "Maybach": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/112_maybach.png",
+    "icon": "/uploads/brand-logos/112_maybach.png",
     "models": [
       "57",
       "62"
     ]
   },
   "Rox": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4488_rox.png",
+    "icon": "/uploads/brand-logos/4488_rox.png",
     "models": [
       "01",
       "Adamas"
     ]
   },
   "Voyah": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4265_voyah.png",
+    "icon": "/uploads/brand-logos/4265_voyah.png",
     "models": [
       "Chasing Light",
       "Courage",
@@ -2172,7 +2172,7 @@
     ]
   },
   "Citroen": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/37_citroen_new.png",
+    "icon": "/uploads/brand-logos/37_citroen_new.png",
     "models": [
       "2 CV",
       "AMI",
@@ -2214,7 +2214,7 @@
     ]
   },
   "Saab": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/152_saab.png",
+    "icon": "/uploads/brand-logos/152_saab.png",
     "models": [
       "9-2X",
       "9-3",
@@ -2235,7 +2235,7 @@
     ]
   },
   "MG": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/119_mg.png",
+    "icon": "/uploads/brand-logos/119_mg.png",
     "models": [
       "3",
       "350",
@@ -2262,7 +2262,7 @@
     ]
   },
   "ИЖ": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/219_izh.png",
+    "icon": "/uploads/brand-logos/219_izh.png",
     "models": [
       "2125 (Комби)",
       "2126 (Ода)",
@@ -2273,7 +2273,7 @@
     ]
   },
   "Mini": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/122_mini.png",
+    "icon": "/uploads/brand-logos/122_mini.png",
     "models": [
       "Cabrio",
       "Clubman",
@@ -2285,14 +2285,14 @@
     ]
   },
   "Jaecoo": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4348_jaecoo.png",
+    "icon": "/uploads/brand-logos/4348_jaecoo.png",
     "models": [
       "J7",
       "J8"
     ]
   },
   "Jaguar": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/88_jaguar.png",
+    "icon": "/uploads/brand-logos/88_jaguar.png",
     "models": [
       "E-Pace",
       "F-Pace",
@@ -2308,7 +2308,7 @@
     ]
   },
   "Datsun": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/47_datsun.png",
+    "icon": "/uploads/brand-logos/47_datsun.png",
     "models": [
       "mi-Do",
       "on-DO"
@@ -2336,7 +2336,7 @@
     ]
   },
   "Great Wall": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/71_great_wall.png",
+    "icon": "/uploads/brand-logos/71_great_wall.png",
     "models": [
       "CoolBear",
       "Cowry",
@@ -2364,7 +2364,7 @@
     ]
   },
   "Bentley": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/15_bentley.png",
+    "icon": "/uploads/brand-logos/15_bentley.png",
     "models": [
       "Arnage",
       "Azure",
@@ -2381,7 +2381,7 @@
     ]
   },
   "Renault Samsung": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/148_renault-samsung.png",
+    "icon": "/uploads/brand-logos/148_renault-samsung.png",
     "models": [
       "QM3",
       "QM5",
@@ -2411,7 +2411,7 @@
     ]
   },
   "Fiat": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/61_fiat_new.png",
+    "icon": "/uploads/brand-logos/61_fiat_new.png",
     "models": [
       "500",
       "500L",
@@ -2452,7 +2452,7 @@
     ]
   },
   "Isuzu": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/85_isuzu.png",
+    "icon": "/uploads/brand-logos/85_isuzu.png",
     "models": [
       "Amigo",
       "Ascender",
@@ -2476,7 +2476,7 @@
     ]
   },
   "Wuling": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/3774_wuling.png",
+    "icon": "/uploads/brand-logos/3774_wuling.png",
     "models": [
       "Bingo",
       "Bingo Plus",
@@ -2499,7 +2499,7 @@
     ]
   },
   "SEAT": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/157_seat.png",
+    "icon": "/uploads/brand-logos/157_seat.png",
     "models": [
       "Alhambra",
       "Altea",
@@ -2516,7 +2516,7 @@
     ]
   },
   "DongFeng": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/52_dongfeng.png",
+    "icon": "/uploads/brand-logos/52_dongfeng.png",
     "models": [
       " Nano EX1",
       "580",
@@ -2562,7 +2562,7 @@
     ]
   },
   "Kaiyi": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4257_kaiyi.png",
+    "icon": "/uploads/brand-logos/4257_kaiyi.png",
     "models": [
       "E5",
       "X3",
@@ -2572,7 +2572,7 @@
     ]
   },
   "Lincoln": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/102_lincoln.png",
+    "icon": "/uploads/brand-logos/102_lincoln.png",
     "models": [
       "Aviator",
       "Continental",
@@ -2590,7 +2590,7 @@
     ]
   },
   "Daihatsu": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/44_daihatsu.png",
+    "icon": "/uploads/brand-logos/44_daihatsu.png",
     "models": [
       "Altis",
       "Applause",
@@ -2624,7 +2624,7 @@
     ]
   },
   "Buick": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/25_buick.png",
+    "icon": "/uploads/brand-logos/25_buick.png",
     "models": [
       "Century",
       "Electra",
@@ -2649,7 +2649,7 @@
     ]
   },
   "Eagle": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/56_eagle.png",
+    "icon": "/uploads/brand-logos/56_eagle.png",
     "models": [
       "Premier",
       "Summit",
@@ -2658,7 +2658,7 @@
     ]
   },
   "GMC": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/69_gmc.png",
+    "icon": "/uploads/brand-logos/69_gmc.png",
     "models": [
       "Acadia",
       "Canyon",
@@ -2675,7 +2675,7 @@
     ]
   },
   "Mercedes-Maybach": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/112_maybach.png",
+    "icon": "/uploads/brand-logos/112_maybach.png",
     "models": [
       "G650 Landaulet Maybach",
       "GLS-Класс",
@@ -2684,7 +2684,7 @@
     ]
   },
   "Maserati": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/111_maserati.png",
+    "icon": "/uploads/brand-logos/111_maserati.png",
     "models": [
       "228",
       "3200 GT",
@@ -2714,7 +2714,7 @@
     ]
   },
   "Acura": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/2_acura.png",
+    "icon": "/uploads/brand-logos/2_acura.png",
     "models": [
       "CL",
       "CSX",
@@ -2736,7 +2736,7 @@
     ]
   },
   "Foton": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/64_foton.png",
+    "icon": "/uploads/brand-logos/64_foton.png",
     "models": [
       "Alpha",
       "Gratour",
@@ -2764,7 +2764,7 @@
     ]
   },
   "Bugatti": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/24_bugatti.png",
+    "icon": "/uploads/brand-logos/24_bugatti.png",
     "models": [
       "Chiron",
       "EB 110",
@@ -2773,7 +2773,7 @@
     ]
   },
   "AITO": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4275_aito.png",
+    "icon": "/uploads/brand-logos/4275_aito.png",
     "models": [
       "M5",
       "M5 EV",
@@ -2783,7 +2783,7 @@
     ]
   },
   "BAIC": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4186_baic.png",
+    "icon": "/uploads/brand-logos/4186_baic.png",
     "models": [
       "BJ2022 Brave Warrior",
       "BJ30",
@@ -2808,7 +2808,7 @@
     ]
   },
   "Pontiac": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/138_pontiac.png",
+    "icon": "/uploads/brand-logos/138_pontiac.png",
     "models": [
       "6000",
       "Aztek",
@@ -2829,13 +2829,13 @@
     ]
   },
   "RAM": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4142_ram.png",
+    "icon": "/uploads/brand-logos/4142_ram.png",
     "models": [
       "1500"
     ]
   },
   "Rover": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/151_rover.png",
+    "icon": "/uploads/brand-logos/151_rover.png",
     "models": [
       "200 Series",
       "25",
@@ -2849,7 +2849,7 @@
     ]
   },
   "Denza": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4216_denza.png",
+    "icon": "/uploads/brand-logos/4216_denza.png",
     "models": [
       "D9",
       "N7",
@@ -2861,7 +2861,7 @@
     ]
   },
   "Smart": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/160_smart_new.png",
+    "icon": "/uploads/brand-logos/160_smart_new.png",
     "models": [
       "#1",
       "#3",
@@ -2880,7 +2880,7 @@
     ]
   },
   "Hafei": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/72_hafei.png",
+    "icon": "/uploads/brand-logos/72_hafei.png",
     "models": [
       "Brio",
       "Princip",
@@ -2920,7 +2920,7 @@
     ]
   },
   "Baojun": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4316_baojun.png",
+    "icon": "/uploads/brand-logos/4316_baojun.png",
     "models": [
       "730",
       "Kiwi EV",
@@ -2930,14 +2930,14 @@
     ]
   },
   "Xiaomi": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4416_xiaomi.png",
+    "icon": "/uploads/brand-logos/4416_xiaomi.png",
     "models": [
       "SU7",
       "YU7"
     ]
   },
   "Rolls-Royce": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/149_rolls-royce.png",
+    "icon": "/uploads/brand-logos/149_rolls-royce.png",
     "models": [
       "Corniche",
       "Cullinan",
@@ -2966,7 +2966,7 @@
     ]
   },
   "Lamborghini": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/95_lamborghini.png",
+    "icon": "/uploads/brand-logos/95_lamborghini.png",
     "models": [
       "Aventador",
       "Centenario",
@@ -2993,14 +2993,14 @@
     ]
   },
   "ЛуАЗ": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/222_luaz.png",
+    "icon": "/uploads/brand-logos/222_luaz.png",
     "models": [
       "1302 (Волынь)",
       "969"
     ]
   },
   "ZX": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/193_zx.png",
+    "icon": "/uploads/brand-logos/193_zx.png",
     "models": [
       "Admiral",
       "GrandLion",
@@ -3010,7 +3010,7 @@
     ]
   },
   "Alfa Romeo": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/3_alfa-romeo.png",
+    "icon": "/uploads/brand-logos/3_alfa-romeo.png",
     "models": [
       "145",
       "146",
@@ -3036,7 +3036,7 @@
     ]
   },
   "Ferrari": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/60_ferrari.png",
+    "icon": "/uploads/brand-logos/60_ferrari.png",
     "models": [
       "12Cilindri",
       "296 GTB",
@@ -3075,7 +3075,7 @@
     ]
   },
   "Scion": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/156_scion.png",
+    "icon": "/uploads/brand-logos/156_scion.png",
     "models": [
       "FR-S",
       "iA",
@@ -3114,7 +3114,7 @@
     ]
   },
   "BAW": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4178_baw.png",
+    "icon": "/uploads/brand-logos/4178_baw.png",
     "models": [
       "212 T01",
       "F7",
@@ -3125,7 +3125,7 @@
     ]
   },
   "JMC": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/91_jmc.png",
+    "icon": "/uploads/brand-logos/91_jmc.png",
     "models": [
       "Baodian",
       "Dadao",
@@ -3142,7 +3142,7 @@
     ]
   },
   "Lotus": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/103_lotus.png",
+    "icon": "/uploads/brand-logos/103_lotus.png",
     "models": [
       "Elan",
       "Eletre",
@@ -3164,7 +3164,7 @@
     ]
   },
   "Lancia": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/96_lancia.png",
+    "icon": "/uploads/brand-logos/96_lancia.png",
     "models": [
       "Beta",
       "Dedra",
@@ -3181,7 +3181,7 @@
     ]
   },
   "Iran Khodro": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/83_iran-khodro.png",
+    "icon": "/uploads/brand-logos/83_iran-khodro.png",
     "models": [
       "Peugeot Pars",
       "Runna",
@@ -3202,7 +3202,7 @@
     ]
   },
   "Livan ": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4392_livan.png",
+    "icon": "/uploads/brand-logos/4392_livan.png",
     "models": [
       "7",
       "S6 Pro",
@@ -3211,7 +3211,7 @@
     ]
   },
   "Aston Martin": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/9_aston-martin.png",
+    "icon": "/uploads/brand-logos/9_aston-martin.png",
     "models": [
       "Cygnet",
       "DB11",
@@ -3231,7 +3231,7 @@
     ]
   },
   "ТагАЗ": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/226_tagaz.png",
+    "icon": "/uploads/brand-logos/226_tagaz.png",
     "models": [
       "Aquila",
       "C10",
@@ -3254,13 +3254,13 @@
     ]
   },
   "Proton": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4196_proton.png",
+    "icon": "/uploads/brand-logos/4196_proton.png",
     "models": [
       "Persona"
     ]
   },
   "Maxus": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4273_maxus.png",
+    "icon": "/uploads/brand-logos/4273_maxus.png",
     "models": [
       "D90 Pro",
       "Dana V1",
@@ -3299,7 +3299,7 @@
     ]
   },
   "Zotye": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/192_zotye.png",
+    "icon": "/uploads/brand-logos/192_zotye.png",
     "models": [
       "T300",
       "T500",
@@ -3315,7 +3315,7 @@
     ]
   },
   "Brilliance": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/21_brilliance.png",
+    "icon": "/uploads/brand-logos/21_brilliance.png",
     "models": [
       "BS2",
       "BS4",
@@ -3382,7 +3382,7 @@
     ]
   },
   "McLaren": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4267_mclaren.png",
+    "icon": "/uploads/brand-logos/4267_mclaren.png",
     "models": [
       "570S",
       "720S",
@@ -3418,7 +3418,7 @@
     ]
   },
   "Xpeng": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4200_xpeng.png",
+    "icon": "/uploads/brand-logos/4200_xpeng.png",
     "models": [
       "G3",
       "G6",
@@ -3429,14 +3429,14 @@
     ]
   },
   "ChangFeng": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/33_changfeng.png",
+    "icon": "/uploads/brand-logos/33_changfeng.png",
     "models": [
       "Flying",
       "SUV"
     ]
   },
   "Dacia": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/40_dacia_new.png",
+    "icon": "/uploads/brand-logos/40_dacia_new.png",
     "models": [
       "1325 Liberta",
       "Duster",
@@ -3448,7 +3448,7 @@
     ]
   },
   "Alpina": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/291_alpina.png",
+    "icon": "/uploads/brand-logos/291_alpina.png",
     "models": [
       "B10",
       "B11",
@@ -3732,7 +3732,7 @@
     ]
   },
   "Saturn": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/155_saturn.png",
+    "icon": "/uploads/brand-logos/155_saturn.png",
     "models": [
       "Aura",
       "ION",
@@ -3763,7 +3763,7 @@
     ]
   },
   "Xinkai": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/190_xin-kai.png",
+    "icon": "/uploads/brand-logos/190_xin-kai.png",
     "models": [
       "Pickup X3",
       "SR-V X3",
@@ -3771,7 +3771,7 @@
     ]
   },
   "ЗИЛ": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/218_zil.png",
+    "icon": "/uploads/brand-logos/218_zil.png",
     "models": [
       "114",
       "117",
@@ -3798,14 +3798,14 @@
     ]
   },
   "Derways": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4182_derways.png",
+    "icon": "/uploads/brand-logos/4182_derways.png",
     "models": [
       "Aurora",
       "Land Crown"
     ]
   },
   "Santana": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4184_santana.png",
+    "icon": "/uploads/brand-logos/4184_santana.png",
     "models": [
       "PS-10"
     ]
@@ -3834,7 +3834,7 @@
     ]
   },
   "Mahindra": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4198_mahindra.png",
+    "icon": "/uploads/brand-logos/4198_mahindra.png",
     "models": [
       "Scorpio"
     ]
@@ -3868,7 +3868,7 @@
     ]
   },
   "Nio": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4212_nio.png",
+    "icon": "/uploads/brand-logos/4212_nio.png",
     "models": [
       "ES6",
       "ES7",
@@ -3921,7 +3921,7 @@
     ]
   },
   "DS": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4243_ds.png",
+    "icon": "/uploads/brand-logos/4243_ds.png",
     "models": [
       "7 Crossback"
     ]
@@ -3940,7 +3940,7 @@
     ]
   },
   "Aro": {
-    "icon": "https://kolesa.kz/static/frontend/images/app/v2/mark-logos/4271_aro.png",
+    "icon": "/uploads/brand-logos/4271_aro.png",
     "models": [
       "24"
     ]
