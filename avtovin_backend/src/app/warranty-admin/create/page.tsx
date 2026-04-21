@@ -81,16 +81,9 @@ function toISODate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
-function calcEndDate(carYear: number): Date {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  if (currentYear - carYear >= 2) {
-    const end = new Date(now);
-    end.setMonth(end.getMonth() + 1);
-    return end;
-  }
-  const end = new Date(now);
-  end.setFullYear(end.getFullYear() + 5);
+function defaultEndDate(start: Date): Date {
+  const end = new Date(start);
+  end.setFullYear(end.getFullYear() + 3);
   return end;
 }
 
@@ -217,16 +210,10 @@ export default function CreateWarrantyPage() {
   const [brands, setBrands] = useState<CatalogBrand[]>([]);
   const [models, setModels] = useState<CatalogModel[]>([]);
 
-  // Dates (auto-calculated)
+  // Dates — editable by manager. Default: today → today + 3 years.
   const today = new Date();
-  const startDateStr = formatDate(today);
-  const endDate = year ? calcEndDate(parseInt(year)) : null;
-  const endDateStr = endDate ? formatDate(endDate) : "—";
-  const warrantyType = year
-    ? today.getFullYear() - parseInt(year) >= 2
-      ? "БУ (1 месяц)"
-      : "Новая (5 лет)"
-    : "";
+  const [startDate, setStartDate] = useState<string>(toISODate(today));
+  const [endDate, setEndDate] = useState<string>(toISODate(defaultEndDate(today)));
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -262,7 +249,17 @@ export default function CreateWarrantyPage() {
 
   const phoneDigits = phone.replace(/\D/g, "");
   const isFormValid =
-    contractNumber && phoneDigits.length === 11 && clientName && brandName && modelName && year && vin.length === 17 && accepted;
+    contractNumber &&
+    phoneDigits.length === 11 &&
+    clientName &&
+    brandName &&
+    modelName &&
+    year &&
+    vin.length === 17 &&
+    startDate &&
+    endDate &&
+    endDate >= startDate &&
+    accepted;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -321,8 +318,8 @@ export default function CreateWarrantyPage() {
         model: modelName,
         year: parseInt(year),
         plateNumber: contractNumber,
-        startDate: toISODate(today),
-        endDate: endDate ? toISODate(endDate) : undefined,
+        startDate,
+        endDate,
         docUrls: docUrls || undefined,
       };
 
@@ -489,26 +486,35 @@ export default function CreateWarrantyPage() {
           </div>
         </div>
 
-        {/* Dates (auto-calculated, readonly) */}
+        {/* Dates — editable by manager */}
         <div className="p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm font-medium text-gray-700 mb-3">Срок гарантии</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Дата начала</label>
-              <div className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900">
-                {startDateStr}
-              </div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Дата начала *</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className={inputClass}
+                required
+              />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Дата окончания</label>
-              <div className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900">
-                {endDateStr}
-              </div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Дата окончания *</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate}
+                className={inputClass}
+                required
+              />
             </div>
           </div>
-          {warrantyType && (
-            <p className="mt-2 text-xs text-blue-600">Тип: {warrantyType}</p>
-          )}
+          <p className="mt-2 text-xs text-blue-600">
+            Гарантия действует 3 года или 150 000 км пробега (что наступит раньше). По умолчанию — 3 года, при необходимости поменяйте даты.
+          </p>
         </div>
 
         {/* Document uploads */}
