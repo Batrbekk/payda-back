@@ -2,8 +2,27 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, Search, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, Search, ShieldCheck } from "lucide-react";
+import {
+  Select as ShadSelect,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
+
+interface CatalogBrand {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+}
+
+interface CatalogModel {
+  id: string;
+  name: string;
+  brandId: string;
+}
 
 interface ScDashboard {
   id: string;
@@ -75,6 +94,103 @@ function formatVinInput(value: string): string {
   return value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, "").slice(0, 17);
 }
 
+function Combobox({
+  label,
+  value,
+  selectedLogo,
+  options,
+  onChange,
+  placeholder,
+  disabled,
+}: {
+  label: string;
+  value: string;
+  selectedLogo?: string | null;
+  options: { id: string; name: string; logoUrl?: string | null }[];
+  onChange: (id: string, name: string, logoUrl?: string | null) => void;
+  placeholder: string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filtered = options.filter((o) =>
+    o.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div ref={ref} className="relative">
+      <label className="block text-xs font-medium text-gray-600 mb-1">{label} *</label>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen(!open)}
+        className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none ${
+          disabled ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+        }`}
+      >
+        <span className={`flex items-center gap-2 truncate ${value ? "text-gray-900" : "text-gray-400"}`}>
+          {selectedLogo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={selectedLogo} alt="" className="w-5 h-5 object-contain shrink-0" />
+          )}
+          {value || placeholder}
+        </span>
+        <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
+      </button>
+      {open && !disabled && (
+        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-hidden">
+          <div className="p-2 border-b border-gray-100">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Поиск..."
+              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500"
+              autoFocus
+            />
+          </div>
+          <div className="overflow-y-auto max-h-56">
+            {filtered.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-gray-400">Ничего не найдено</div>
+            ) : (
+              filtered.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => {
+                    onChange(o.id, o.name, o.logoUrl);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 flex items-center gap-2 ${
+                    o.name === value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-gray-700"
+                  }`}
+                >
+                  {o.logoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={o.logoUrl} alt="" className="w-5 h-5 object-contain shrink-0" />
+                  )}
+                  {o.name}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function computeCommission(svc: ScService, price: number, scCommissionPercent: number): number {
   // Service-level override: SC manager sets commission_type/value for this service
   if (svc.commissionType && svc.commissionValue != null) {
@@ -101,9 +217,16 @@ export default function ScCreateVisitPage() {
   const [phone, setPhone] = useState("");
   const [clientName, setClientName] = useState("");
   const [brand, setBrand] = useState("");
+  const [brandId, setBrandId] = useState("");
+  const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [model, setModel] = useState("");
+  const [modelId, setModelId] = useState("");
   const [year, setYear] = useState("");
   const [plateNumber, setPlateNumber] = useState("");
+
+  // Car catalog (brands + models per brand)
+  const [catalogBrands, setCatalogBrands] = useState<CatalogBrand[]>([]);
+  const [catalogModels, setCatalogModels] = useState<CatalogModel[]>([]);
 
   // Visit details
   const [mileage, setMileage] = useState<string>("");
@@ -136,6 +259,30 @@ export default function ScCreateVisitPage() {
       })
       .catch(() => {});
   }, [router]);
+
+  // Load car catalog brands on mount
+  useEffect(() => {
+    fetch("/api/car-catalog/brands", {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then((r) => r.json())
+      .then((data: CatalogBrand[]) => setCatalogBrands(data))
+      .catch(() => {});
+  }, []);
+
+  // Load models when brand changes
+  useEffect(() => {
+    if (!brandId) {
+      setCatalogModels([]);
+      return;
+    }
+    fetch(`/api/car-catalog/models?brandId=${brandId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then((r) => r.json())
+      .then((data: CatalogModel[]) => setCatalogModels(data))
+      .catch(() => {});
+  }, [brandId]);
 
   const isAutoShop = sc?.type === "AUTO_SHOP";
 
@@ -400,35 +547,43 @@ export default function ScCreateVisitPage() {
                   className={inputClass}
                 />
               </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Марка *</label>
-                <input
-                  type="text"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  className={inputClass}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Модель *</label>
-                <input
-                  type="text"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className={inputClass}
-                  required
-                />
-              </div>
+              <Combobox
+                label="Марка"
+                value={brand}
+                selectedLogo={brandLogo}
+                options={catalogBrands}
+                placeholder="Выберите марку"
+                onChange={(id, name, logoUrl) => {
+                  setBrandId(id);
+                  setBrand(name);
+                  setBrandLogo(logoUrl ?? null);
+                  setModelId("");
+                  setModel("");
+                }}
+              />
+              <Combobox
+                label="Модель"
+                value={model}
+                options={catalogModels}
+                placeholder={brandId ? "Выберите модель" : "Сначала марку"}
+                disabled={!brandId}
+                onChange={(id, name) => {
+                  setModelId(id);
+                  setModel(name);
+                }}
+              />
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Год *</label>
-                <input
-                  {...numericInputProps}
-                  value={year}
-                  onChange={(e) => setYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                  className={inputClass}
-                  required
-                />
+                <ShadSelect value={year} onValueChange={(val) => setYear(val)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Выберите год" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: new Date().getFullYear() - 1990 + 1 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </ShadSelect>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Гос.номер *</label>
