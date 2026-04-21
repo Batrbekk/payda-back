@@ -83,7 +83,7 @@ function toISODate(date: Date): string {
 
 function defaultEndDate(start: Date): Date {
   const end = new Date(start);
-  end.setFullYear(end.getFullYear() + 3);
+  end.setFullYear(end.getFullYear() + 5);
   return end;
 }
 
@@ -513,7 +513,7 @@ export default function CreateWarrantyPage() {
             </div>
           </div>
           <p className="mt-2 text-xs text-blue-600">
-            Гарантия действует 3 года или 150 000 км пробега (что наступит раньше). По умолчанию — 3 года, при необходимости поменяйте даты.
+            Гарантия действует 5 лет или 100 000 км пробега (что наступит раньше). По умолчанию — 5 лет, при необходимости поменяйте даты.
           </p>
         </div>
 

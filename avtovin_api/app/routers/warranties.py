@@ -87,11 +87,11 @@ async def create_warranty(
     if not body.contract_number or not body.client_name:
         raise HTTPException(status_code=400, detail="Заполните все обязательные поля")
 
-    # Warranty term: 3 years (or 150 000 km, tracked separately).
+    # Warranty term: 5 years (or 100 000 km, tracked separately).
     # Manager can override start_date / end_date via request body.
     now = datetime.utcnow()
     start_date = body.start_date or now
-    end_date = body.end_date or (start_date + relativedelta(years=3))
+    end_date = body.end_date or (start_date + relativedelta(years=5))
 
     # Check unique contract number
     result = await db.execute(select(Warranty).where(Warranty.contract_number == body.contract_number))
