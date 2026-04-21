@@ -235,13 +235,14 @@ export default function ScCreateVisitPage() {
       if (phoneDigits.length !== 11) return false;
       if (!clientName || !brand || !model || !year || !plateNumber) return false;
     }
+    if (mileage && foundCar?.mileage != null && parseInt(mileage) < foundCar.mileage) return false;
     if (isAutoShop) {
       return (parseInt(totalAmount) || 0) > 0 && !!description;
     }
     if (selectedServices.length === 0) return false;
     if (selectedServices.some((s) => !s.price || s.price <= 0)) return false;
     return true;
-  }, [sc, vin, lookupLoading, needsClientData, phoneDigits, clientName, brand, model, year, plateNumber, isAutoShop, totalAmount, description, selectedServices]);
+  }, [sc, vin, lookupLoading, needsClientData, phoneDigits, clientName, brand, model, year, plateNumber, mileage, foundCar, isAutoShop, totalAmount, description, selectedServices]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -442,9 +443,20 @@ export default function ScCreateVisitPage() {
             type="number"
             value={mileage}
             onChange={(e) => setMileage(e.target.value.replace(/\D/g, ""))}
-            placeholder="150000"
+            placeholder={foundCar?.mileage ? String(foundCar.mileage) : "150000"}
+            min={foundCar?.mileage ?? undefined}
             className={inputClass}
           />
+          {foundCar?.mileage != null && (
+            <p className="mt-1 text-xs text-gray-500">
+              Предыдущий пробег: {foundCar.mileage.toLocaleString("ru-RU")} км — укажите не меньше.
+            </p>
+          )}
+          {foundCar?.mileage != null && mileage && parseInt(mileage) < foundCar.mileage && (
+            <p className="mt-1 text-xs text-red-600">
+              Пробег не может быть меньше предыдущего ({foundCar.mileage.toLocaleString("ru-RU")} км).
+            </p>
+          )}
         </div>
 
         {/* Services or total amount */}

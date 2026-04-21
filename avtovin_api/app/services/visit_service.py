@@ -40,6 +40,10 @@ async def create_visit(
     if not sc:
         raise ValueError("Сервисный центр не найден")
 
+    # Odometer can only go up
+    if mileage is not None and car.mileage is not None and mileage < car.mileage:
+        raise ValueError(f"Пробег не может быть меньше предыдущего ({car.mileage} км)")
+
     # Determine mode
     is_simple = sc.type == "AUTO_SHOP" or (sc.type == "CAR_WASH" and not services_in)
 
