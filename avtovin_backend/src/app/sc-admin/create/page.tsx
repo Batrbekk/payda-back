@@ -306,6 +306,14 @@ export default function ScCreateVisitPage() {
   const inputClass =
     "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none";
 
+  // Use with type="text" + inputMode="numeric" to get a digit-only field
+  // without the browser's number-input spinner / wheel-scroll behaviour.
+  const numericInputProps = {
+    type: "text" as const,
+    inputMode: "numeric" as const,
+    pattern: "[0-9]*",
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <button
@@ -415,7 +423,7 @@ export default function ScCreateVisitPage() {
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Год *</label>
                 <input
-                  type="number"
+                  {...numericInputProps}
                   value={year}
                   onChange={(e) => setYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
                   className={inputClass}
@@ -440,11 +448,10 @@ export default function ScCreateVisitPage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Пробег (км)</label>
           <input
-            type="number"
+            {...numericInputProps}
             value={mileage}
             onChange={(e) => setMileage(e.target.value.replace(/\D/g, ""))}
             placeholder={foundCar?.mileage ? String(foundCar.mileage) : "150000"}
-            min={foundCar?.mileage ?? undefined}
             className={inputClass}
           />
           {foundCar?.mileage != null && (
@@ -477,7 +484,7 @@ export default function ScCreateVisitPage() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Сумма (₸) *</label>
               <input
-                type="number"
+                {...numericInputProps}
                 value={totalAmount}
                 onChange={(e) => setTotalAmount(e.target.value.replace(/\D/g, ""))}
                 className={inputClass}
@@ -535,10 +542,10 @@ export default function ScCreateVisitPage() {
                               Цена (₸) {svc.isFlexPrice && "— укажите"}
                             </label>
                             <input
-                              type="number"
+                              {...numericInputProps}
                               value={selected.price || ""}
                               onChange={(e) =>
-                                updateServicePrice(svc.id, parseInt(e.target.value) || 0)
+                                updateServicePrice(svc.id, parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)
                               }
                               disabled={!svc.isFlexPrice}
                               className={`${inputClass} ${
