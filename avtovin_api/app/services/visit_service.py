@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -210,7 +210,7 @@ async def _finalize_visit(
             for vs in visit_services
         )
     if has_oil_change:
-        car.last_service_at = datetime.now(timezone.utc)
+        car.last_service_at = datetime.utcnow()
         if mileage:
             car.last_service_mileage = mileage
 
