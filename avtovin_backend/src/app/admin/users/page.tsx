@@ -9,6 +9,7 @@ interface CarInfo {
   model: string | null;
   year: number | null;
   plateNumber: string | null;
+  vin: string | null;
 }
 
 interface User {
@@ -245,20 +246,25 @@ export default function AdminUsersPage() {
                       <td className="px-6 py-4 text-sm text-gray-600">{(user.balance || 0).toLocaleString()} ₸</td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {user.cars.length > 0 ? (
-                          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setExpandedUser(expandedUser === user.id ? null : user.id)}>
-                            <Car className="h-4 w-4 text-gray-400" />
-                            <span>{formatCar(user.cars[0])}</span>
-                            {user.cars[0].plateNumber && (
-                              <span className="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">{user.cars[0].plateNumber}</span>
-                            )}
-                            {user._count.cars > 1 && (
-                              <>
-                                <span className="text-xs text-gray-400">+{user._count.cars - 1}</span>
-                                {expandedUser === user.id
-                                  ? <ChevronUp className="h-3.5 w-3.5 text-gray-400" />
-                                  : <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
-                                }
-                              </>
+                          <div className="flex flex-col gap-0.5 cursor-pointer" onClick={() => setExpandedUser(expandedUser === user.id ? null : user.id)}>
+                            <div className="flex items-center gap-2">
+                              <Car className="h-4 w-4 text-gray-400" />
+                              <span>{formatCar(user.cars[0])}</span>
+                              {user.cars[0].plateNumber && (
+                                <span className="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">{user.cars[0].plateNumber}</span>
+                              )}
+                              {user._count.cars > 1 && (
+                                <>
+                                  <span className="text-xs text-gray-400">+{user._count.cars - 1}</span>
+                                  {expandedUser === user.id
+                                    ? <ChevronUp className="h-3.5 w-3.5 text-gray-400" />
+                                    : <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+                                  }
+                                </>
+                              )}
+                            </div>
+                            {user.cars[0].vin && (
+                              <span className="text-[11px] text-gray-500 font-mono pl-6">VIN: {user.cars[0].vin}</span>
                             )}
                           </div>
                         ) : (
@@ -290,11 +296,16 @@ export default function AdminUsersPage() {
                         <td colSpan={7} className="px-6 py-3 bg-gray-50">
                           <div className="flex flex-wrap gap-3">
                             {user.cars.map((car, i) => (
-                              <div key={car.id || i} className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm">
-                                <Car className="h-3.5 w-3.5 text-gray-400" />
-                                <span className="text-gray-700">{formatCar(car)}</span>
-                                {car.plateNumber && (
-                                  <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-600">{car.plateNumber}</span>
+                              <div key={car.id || i} className="flex flex-col gap-0.5 bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <Car className="h-3.5 w-3.5 text-gray-400" />
+                                  <span className="text-gray-700">{formatCar(car)}</span>
+                                  {car.plateNumber && (
+                                    <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-600">{car.plateNumber}</span>
+                                  )}
+                                </div>
+                                {car.vin && (
+                                  <span className="text-[11px] text-gray-500 font-mono pl-5">VIN: {car.vin}</span>
                                 )}
                               </div>
                             ))}
